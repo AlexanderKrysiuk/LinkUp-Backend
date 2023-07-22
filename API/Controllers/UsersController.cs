@@ -1,6 +1,7 @@
 ﻿using API.Domain;
 using API.DTOs;
 using API.Infrastructure;
+using API.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,27 +12,27 @@ namespace API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private DataService _dataService;
-        public UsersController(DataService service) { 
-            _dataService = service;
+        private IUserRepository _userRepository;
+        public UsersController(IUserRepository repository) { 
+            _userRepository = repository;
         }
-        // GET: api/users
+        // GET: api/users?search=example
         [HttpGet]
-        public ActionResult<IEnumerable<UserDTO>> Get()
+        public ActionResult<IEnumerable<UserDTO>> Get([FromQuery] string? search)
         {
-            return Ok( _dataService.Users.Select(user => new UserDTO() {Id=user.Id, Login=user.Login, UserType=UserDTO.DetermineUserType(user) }));
+            return Ok( _userRepository.GetUsers(search).Select(user => new UserDTO(user)));
         }
 
         // GET api/users/5
         [HttpGet("{id}")]
         public ActionResult<UserDTO> Get(int id)
         {
-            IUser user = _dataService.Users.SingleOrDefault(user => user.Id == id);
+            IUser? user = _userRepository.GetUser(id);
             if (user == null)
             {
                 return NotFound();
             }
-            return Ok(new UserDTO() { Id = user.Id, Login=user.Login, UserType= UserDTO.DetermineUserType(user) });
+            return Ok(new UserDTO(user));
         }
 
         // POST api/users
