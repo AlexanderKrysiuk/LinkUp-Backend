@@ -1,4 +1,5 @@
 ﻿using API.Domain;
+using API.DTOs;
 
 namespace API.Infrastructure.Repositories
 {
@@ -8,14 +9,22 @@ namespace API.Infrastructure.Repositories
         public UserMockRepository() { 
             _users = new List<IUser>() { new Provider() { Id = 1, Email = "provider@provide.com", Login = "Provider", Password = "Password123$" }, new Client() { Id = 2, Email = "client@use.com", Login = "Client", Password = "Password123$" } };
         }
-        public void CreateUser(IUser user)
-        {
-            throw new NotImplementedException();
-        }
 
-        public bool DeleteUser(int id)
+        public IUser CreateUser(UserRegistrationDTO user)
         {
-            throw new NotImplementedException();
+            IUser newUser;
+            if (user.ProviderToken is not null)
+            {
+                newUser = new Provider() { Login=user.Login, Email=user.Email, Password=user.Password };
+                newUser.Id= _users.Max(u=>u.Id)+1;
+            }
+            else
+            {
+                newUser = new Client() { Login = user.Login, Email = user.Email, Password = user.Password };
+                newUser.Id = _users.Max(u => u.Id) + 1;
+            }
+            _users.Add(newUser);
+            return newUser;
         }
 
         public IUser? GetUser(int id)
@@ -28,7 +37,12 @@ namespace API.Infrastructure.Repositories
             return _users;
         }
 
-        public bool UpdateUser(IUser user)
+        IUser IUserRepository.DeleteUser(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        IUser IUserRepository.UpdateUser(IUser user)
         {
             throw new NotImplementedException();
         }
