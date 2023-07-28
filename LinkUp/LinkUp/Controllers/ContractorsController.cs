@@ -10,6 +10,12 @@ namespace LinkUp.Controllers;
 public class ContractorsController : ControllerBase
 {
     private readonly IContractorService _contractorService;
+
+    public ContractorsController(IContractorService contractorService)
+    {
+        _contractorService = contractorService;
+    }
+
     [HttpPost]
     public IActionResult CreateContractor(CreateContractorRequest request)
     {
@@ -29,7 +35,7 @@ public class ContractorsController : ControllerBase
         );
         return CreatedAtAction(
             actionName: nameof(GetContractor),
-            routeValues: new {Id = contractor.Id},
+            routeValues: new {id = contractor.Id},
             value: response
         );
     }

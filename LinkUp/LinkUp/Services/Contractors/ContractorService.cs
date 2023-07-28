@@ -5,7 +5,7 @@ namespace LinkUp.Services.Contractors;
 
 public class ContractorService : IContractorService
 {
-    private readonly Dictionary<Guid, Contractor> _contractors = new ();
+    private static readonly Dictionary<Guid, Contractor> _contractors = new();
     public void CreateContractor(Contractor contractor)
     {
         _contractors.Add(contractor.Id, contractor);

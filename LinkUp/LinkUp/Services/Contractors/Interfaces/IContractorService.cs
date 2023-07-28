@@ -1,4 +1,3 @@
-using LinkUp.Contracts.Contractor;
 using LinkUp.Models;
 
 namespace LinkUp.Services.Contractors.Interfaces;

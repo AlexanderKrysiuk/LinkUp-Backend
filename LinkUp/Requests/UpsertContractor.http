@@ -1,10 +1,10 @@
-@id=21372137-2137-2137-2137-213721372137
+@id=607a44ee-774f-4f2b-ae97-d6f4a98896ca
 
 PUT http://localhost:5223/contractors/{{id}}
 Content-Type: application/json
 
 {
-    "name": "Juan Paul 2",
+    "name": "Juan Paul II",
     "email": "JP2@vatican.it",
-    "password": "JeszczeJak2137"
+    "password": "TakJakPanJezusPowiedział"
 }
