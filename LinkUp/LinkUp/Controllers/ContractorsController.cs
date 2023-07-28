@@ -4,27 +4,28 @@ using Microsoft.AspNetCore.Mvc;
 namespace LinkUp.Controllers;
 
 [ApiController]
+[Route("[controller]")]
 public class ContractorsController : ControllerBase
 {
-    [HttpPost("/contractors")]
+    [HttpPost()]
     public IActionResult CreateContractor(CreateContractorRequest request)
     {
         return Ok(request);
     }
 
-    [HttpGet("/contractors/{id:guid}")]
+    [HttpGet("{id:guid}")]
     public IActionResult GetContractor(Guid id)
     {
         return Ok(id);
     }
 
-    [HttpPut("/contractors/{id:guid}")]
+    [HttpPut("{id:guid}")]
     public IActionResult UpsertContractor(Guid id, UpsertContractorRequest request)
     {
         return Ok(request);
     }
 
-    [HttpDelete("/contractors/{id:guid}")]
+    [HttpDelete("{id:guid}")]
     public IActionResult DeleteContractor(Guid id)
     {
         return Ok(id);
