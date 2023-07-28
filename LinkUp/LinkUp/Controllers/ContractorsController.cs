@@ -1,4 +1,6 @@
 using LinkUp.Contracts.Contractor;
+using LinkUp.Models;
+using LinkUp.Services.Contractors.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUp.Controllers;
@@ -7,16 +9,44 @@ namespace LinkUp.Controllers;
 [Route("[controller]")]
 public class ContractorsController : ControllerBase
 {
-    [HttpPost()]
+    private readonly IContractorService _contractorService;
+    [HttpPost]
     public IActionResult CreateContractor(CreateContractorRequest request)
     {
-        return Ok(request);
+        var contractor = new Contractor(
+            Guid.NewGuid(),
+            request.Name,
+            request.Email,
+            request.Password
+        );
+        // TODO: save contractor to database
+        _contractorService.CreateContractor(contractor);
+        var response = new ContractorResponse(
+            contractor.Id,
+            contractor.Name,
+            contractor.Email,
+            contractor.Password
+        );
+        return CreatedAtAction(
+            actionName: nameof(GetContractor),
+            routeValues: new {Id = contractor.Id},
+            value: response
+        );
     }
 
     [HttpGet("{id:guid}")]
     public IActionResult GetContractor(Guid id)
     {
-        return Ok(id);
+        Contractor contractor = _contractorService.GetContractor(id);
+
+        var response = new ContractorResponse(
+            contractor.Id,
+            contractor.Name,
+            contractor.Email,
+            contractor.Password
+        );
+
+        return Ok(response);
     }
 
     [HttpPut("{id:guid}")]
