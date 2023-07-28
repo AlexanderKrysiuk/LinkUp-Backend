@@ -1,0 +1,10 @@
+@id=21372137-2137-2137-2137-213721372137
+
+PUT http://localhost:5223/contractors/{{id}}
+Content-Type: application/json
+
+{
+    "name": "Juan Paul 2",
+    "email": "JP2@vatican.it",
+    "password": "JeszczeJak2137"
+}

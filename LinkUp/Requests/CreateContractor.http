@@ -1,0 +1,8 @@
+POST http://localhost:5223/contractors
+Content-Type: application/json
+
+{
+    "name": "Juan Paul 2",
+    "email": "JP2@vatican.it",
+    "password": "JeszczeJak2137"
+}

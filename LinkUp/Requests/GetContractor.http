@@ -1,0 +1,3 @@
+@id=21372137-2137-2137-2137-213721372137
+
+GET http://localhost:5223/contractors/{{id}}
