@@ -1,4 +1,4 @@
-namespace LinkUp.Contracts.Contactor;
+namespace LinkUp.Contracts.Contractor;
 
 public record ContractorResponse(
     Guid Id,
