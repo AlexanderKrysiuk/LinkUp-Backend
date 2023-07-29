@@ -11,8 +11,18 @@ public class ContractorService : IContractorService
         _contractors.Add(contractor.Id, contractor);
     }
 
+    public void DeleteContractor(Guid id)
+    {
+        _contractors.Remove(id);
+    }
+
     public Contractor GetContractor(Guid id)
     {
         return _contractors[id];
+    }
+
+    public void UpsertContractor(Contractor contractor)
+    {
+        _contractors[contractor.Id] = contractor;
     }
 }

@@ -58,12 +58,22 @@ public class ContractorsController : ControllerBase
     [HttpPut("{id:guid}")]
     public IActionResult UpsertContractor(Guid id, UpsertContractorRequest request)
     {
-        return Ok(request);
+        var contractor = new Contractor(
+            id,
+            request.Name,
+            request.Email,
+            request.Password
+        );
+        _contractorService.UpsertContractor(contractor);
+
+        // TODO: return 201 if a new contractor was created
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
     public IActionResult DeleteContractor(Guid id)
     {
+        _contractorService.DeleteContractor(id);
         return Ok(id);
     }
 
