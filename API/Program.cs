@@ -22,7 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(new UserMockRepository() as IUserRepository);
 var app = builder.Build();
-
+app.UseCors();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
