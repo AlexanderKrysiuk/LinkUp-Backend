@@ -1,4 +1,5 @@
 ﻿using API.Domain;
+using API.DTOs;
 
 namespace API.Infrastructure.Repositories
 {
@@ -6,8 +7,8 @@ namespace API.Infrastructure.Repositories
     {
         IEnumerable<IUser> GetUsers(string? search);
         IUser? GetUser(int id);
-        void CreateUser(IUser user);
-        bool UpdateUser(IUser user);
-        bool DeleteUser(int id);
+        IUser CreateUser(UserRegistrationDTO user);
+        IUser UpdateUser(IUser user);
+        IUser DeleteUser(int id);
     }
 }

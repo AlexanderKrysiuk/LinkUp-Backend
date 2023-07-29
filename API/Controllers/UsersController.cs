@@ -1,6 +1,6 @@
 ﻿using API.Domain;
+using API.utils.validators;
 using API.DTOs;
-using API.Infrastructure;
 using API.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,10 +35,23 @@ namespace API.Controllers
             return Ok(new UserDTO(user));
         }
 
-        // POST api/users
-        [HttpPost]
-        public void Post([FromBody] string value)
+        // POST api/users/signup
+        [HttpPost("signup")]
+        public ActionResult<UserDTO> Post([FromBody] UserRegistrationDTO userData)
         {
+            ValidationResult validationResult = UserValidator.ValidateRegistrationData(userData, _userRepository.GetUsers(null).ToList());
+            if (validationResult.Success)
+            {
+                IUser addedUser = _userRepository.CreateUser(userData);
+                return CreatedAtAction(nameof(Get), new { id = addedUser.Id },new UserDTO(addedUser));
+            }
+            switch (validationResult.Code)
+            {
+                case 400: return BadRequest(validationResult.Message);
+                case 401: return Unauthorized(validationResult.Message);
+                case 409: return Conflict(validationResult.Message);
+                default: throw new Exception(validationResult.Message);
+            }
         }
 
         // PUT api/users/5
