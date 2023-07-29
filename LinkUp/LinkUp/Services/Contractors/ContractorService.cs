@@ -8,14 +8,18 @@ namespace LinkUp.Services.Contractors;
 public class ContractorService : IContractorService
 {
     private static readonly Dictionary<Guid, Contractor> _contractors = new();
-    public void CreateContractor(Contractor contractor)
+    public ErrorOr<Created> CreateContractor(Contractor contractor)
     {
         _contractors.Add(contractor.Id, contractor);
+
+        return Result.Created;
     }
 
-    public void DeleteContractor(Guid id)
+    public ErrorOr<Deleted> DeleteContractor(Guid id)
     {
         _contractors.Remove(id);
+
+        return Result.Deleted;
     }
 
     public ErrorOr<Contractor> GetContractor(Guid id)
@@ -28,8 +32,11 @@ public class ContractorService : IContractorService
         return Errors.Contractor.NotFound;
     }
 
-    public void UpsertContractor(Contractor contractor)
+    public ErrorOr<UpsertedContractor> UpsertContractor(Contractor contractor)
     {
+        var IsNewlyCreated = !_contractors.ContainsKey(contractor.Id);
         _contractors[contractor.Id] = contractor;
+
+        return new UpsertedContractor(IsNewlyCreated);
     }
 }

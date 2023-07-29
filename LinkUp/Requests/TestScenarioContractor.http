@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 
 ###
-@id=d093eecb-85e1-47ba-b421-82f5a6f31954
+@id=4aea4b5f-2c65-47a7-b4be-347fcadd41b5
 GET http://localhost:5223/contractors/{{id}}
 ###
 PUT http://localhost:5223/contractors/{{id}}

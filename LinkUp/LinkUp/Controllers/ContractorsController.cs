@@ -1,15 +1,15 @@
 using ErrorOr;
+using LinkUp.Contollers;
 using LinkUp.Contracts.Contractor;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
+using LinkUp.Services.Contractors;
 using LinkUp.Services.Contractors.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUp.Controllers;
 
-[ApiController]
-[Route("[controller]")]
-public class ContractorsController : ControllerBase
+public class ContractorsController : ApiController
 {
     private readonly IContractorService _contractorService;
 
@@ -21,24 +21,24 @@ public class ContractorsController : ControllerBase
     [HttpPost]
     public IActionResult CreateContractor(CreateContractorRequest request)
     {
-        var contractor = new Contractor(
-            Guid.NewGuid(),
-            request.Name,
-            request.Email,
+        ErrorOr<Contractor> requestToContractorResult = Contractor.Create(
+            request.Name, 
+            request.Email, 
             request.Password
         );
+
+        if(requestToContractorResult.IsError)
+        {
+            return Problem(requestToContractorResult.Errors);
+        }
+
+        var contractor = requestToContractorResult.Value;
         // TODO: save contractor to database
-        _contractorService.CreateContractor(contractor);
-        var response = new ContractorResponse(
-            contractor.Id,
-            contractor.Name,
-            contractor.Email,
-            contractor.Password
-        );
-        return CreatedAtAction(
-            actionName: nameof(GetContractor),
-            routeValues: new {id = contractor.Id},
-            value: response
+        ErrorOr<Created> createContratorResult = _contractorService.CreateContractor(contractor);
+
+        return createContratorResult.Match(
+            created => CreatedAtGetContractor(contractor),
+            errors => Problem(errors)
         );
     }
 
@@ -47,43 +47,63 @@ public class ContractorsController : ControllerBase
     {
         ErrorOr<Contractor> getContractorResult = _contractorService.GetContractor(id);
 
-        if (getContractorResult.IsError && getContractorResult.FirstError == Errors.Contractor.NotFound)
-        {
-            return NotFound();
-        }
-
-        var contractor = getContractorResult.Value;
-
-        var response = new ContractorResponse(
-            contractor.Id,
-            contractor.Name,
-            contractor.Email,
-            contractor.Password
+        return getContractorResult.Match(
+            contractor => Ok(MapContractorResponse(contractor)),
+            errors => Problem(errors)
         );
-
-        return Ok(response);
     }
 
     [HttpPut("{id:guid}")]
     public IActionResult UpsertContractor(Guid id, UpsertContractorRequest request)
     {
-        var contractor = new Contractor(
-            id,
+        ErrorOr<Contractor> requestToContractorResult = Contractor.Create(
             request.Name,
             request.Email,
-            request.Password
+            request.Password,
+            id
         );
-        _contractorService.UpsertContractor(contractor);
+
+        if (requestToContractorResult.IsError)
+        {
+            return Problem(requestToContractorResult.Errors);
+        }
+
+        var contractor = requestToContractorResult.Value;
+        ErrorOr<UpsertedContractor> upsertContractorResult = _contractorService.UpsertContractor(contractor);
 
         // TODO: return 201 if a new contractor was created
-        return NoContent();
+        return upsertContractorResult.Match(
+            upserted => upserted.IsNewlyCreated ? CreatedAtGetContractor(contractor) : NoContent(),
+            errors => Problem(errors)
+        );
     }
 
     [HttpDelete("{id:guid}")]
     public IActionResult DeleteContractor(Guid id)
     {
-        _contractorService.DeleteContractor(id);
-        return Ok(id);
+        ErrorOr<Deleted> deletedContractorResult = _contractorService.DeleteContractor(id);
+        return deletedContractorResult.Match(
+            deleted => NoContent(),
+            errors => Problem(errors)
+        );
     }
 
+    private static ContractorResponse MapContractorResponse(Contractor contractor)
+    {
+        return new ContractorResponse(
+                    contractor.Id,
+                    contractor.Name,
+                    contractor.Email,
+                    contractor.Password
+                );
+    }
+
+    private CreatedAtActionResult CreatedAtGetContractor(Contractor contractor)
+    {
+        return CreatedAtAction(
+            actionName: nameof(GetContractor),
+            routeValues: new { id = contractor.Id },
+            value: MapContractorResponse(contractor)
+        );
+    }
 }
