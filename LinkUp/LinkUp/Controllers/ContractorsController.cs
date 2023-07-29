@@ -21,11 +21,7 @@ public class ContractorsController : ApiController
     [HttpPost]
     public IActionResult CreateContractor(CreateContractorRequest request)
     {
-        ErrorOr<Contractor> requestToContractorResult = Contractor.Create(
-            request.Name, 
-            request.Email, 
-            request.Password
-        );
+        ErrorOr<Contractor> requestToContractorResult = Contractor.From(request);
 
         if(requestToContractorResult.IsError)
         {
@@ -56,12 +52,7 @@ public class ContractorsController : ApiController
     [HttpPut("{id:guid}")]
     public IActionResult UpsertContractor(Guid id, UpsertContractorRequest request)
     {
-        ErrorOr<Contractor> requestToContractorResult = Contractor.Create(
-            request.Name,
-            request.Email,
-            request.Password,
-            id
-        );
+        ErrorOr<Contractor> requestToContractorResult = Contractor.From(id, request);
 
         if (requestToContractorResult.IsError)
         {

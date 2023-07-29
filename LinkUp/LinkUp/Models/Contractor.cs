@@ -1,4 +1,5 @@
 using ErrorOr;
+using LinkUp.Contracts.Contractor;
 using LinkUp.ServiceErrors;
 using static LinkUp.ServiceErrors.Errors;
 
@@ -47,5 +48,22 @@ public class Contractor
     static bool IsEmail(string email)
     {
         return email.Contains("@");
+    }
+
+    public static ErrorOr<Contractor> From(CreateContractorRequest request){
+        return Create(
+            request.Name,
+            request.Email,
+            request.Password
+        );
+    }
+
+    public static ErrorOr<Contractor> From(Guid id, UpsertContractorRequest request){
+        return Create(
+            request.Name,
+            request.Email,
+            request.Password,
+            id
+        );
     }
 }
