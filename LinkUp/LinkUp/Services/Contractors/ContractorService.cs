@@ -1,4 +1,6 @@
+using ErrorOr;
 using LinkUp.Models;
+using LinkUp.ServiceErrors;
 using LinkUp.Services.Contractors.Interfaces;
 
 namespace LinkUp.Services.Contractors;
@@ -16,9 +18,14 @@ public class ContractorService : IContractorService
         _contractors.Remove(id);
     }
 
-    public Contractor GetContractor(Guid id)
+    public ErrorOr<Contractor> GetContractor(Guid id)
     {
-        return _contractors[id];
+        if (_contractors.TryGetValue(id, out var contractor))
+        {
+            return contractor;
+        }
+
+        return Errors.Contractor.NotFound;
     }
 
     public void UpsertContractor(Contractor contractor)

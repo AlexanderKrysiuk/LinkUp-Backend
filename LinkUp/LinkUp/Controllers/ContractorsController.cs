@@ -1,5 +1,7 @@
+using ErrorOr;
 using LinkUp.Contracts.Contractor;
 using LinkUp.Models;
+using LinkUp.ServiceErrors;
 using LinkUp.Services.Contractors.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,7 +45,14 @@ public class ContractorsController : ControllerBase
     [HttpGet("{id:guid}")]
     public IActionResult GetContractor(Guid id)
     {
-        Contractor contractor = _contractorService.GetContractor(id);
+        ErrorOr<Contractor> getContractorResult = _contractorService.GetContractor(id);
+
+        if (getContractorResult.IsError && getContractorResult.FirstError == Errors.Contractor.NotFound)
+        {
+            return NotFound();
+        }
+
+        var contractor = getContractorResult.Value;
 
         var response = new ContractorResponse(
             contractor.Id,
