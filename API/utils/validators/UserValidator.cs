@@ -62,5 +62,16 @@ namespace API.utils.validators
             }
             return new ValidationResult() { Message = string.Empty, Success = true, Code = 201 };
         }
+
+        public static IUser? AuthenticateUser(UserLoginDTO userData, List<IUser> users)
+        {
+            if (userData is null)
+            {
+                return null;
+            }
+            if (users is null) { return null; }
+            IUser? foundUser = users.FirstOrDefault(user => user.Email == userData.Email && user.Password== userData.Password);
+            return foundUser;
+        }
     }
 }

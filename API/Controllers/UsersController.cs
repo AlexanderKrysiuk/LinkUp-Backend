@@ -54,6 +54,18 @@ namespace API.Controllers
             }
         }
 
+        // POST api/users/signup
+        [HttpPost("login")]
+        public ActionResult<UserDTO> Login([FromBody] UserLoginDTO userData)
+        {
+            IUser? foundUser = UserValidator.AuthenticateUser(userData, _userRepository.GetUsers(null).ToList());
+            if (foundUser is not null)
+            {
+                return Ok(new UserDTO(foundUser));
+            }
+            return Unauthorized();       
+        }
+
         // PUT api/users/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
