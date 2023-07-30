@@ -47,9 +47,9 @@ namespace API.Controllers
             }
             switch (validationResult.Code)
             {
-                case 400: return BadRequest(validationResult.Message);
-                case 401: return Unauthorized(validationResult.Message);
-                case 409: return Conflict(validationResult.Message);
+                case 400: return BadRequest(validationResult);
+                case 401: return Unauthorized(validationResult);
+                case 409: return Conflict(validationResult);
                 default: throw new Exception(validationResult.Message);
             }
         }
