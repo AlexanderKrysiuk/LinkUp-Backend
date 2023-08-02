@@ -1,0 +1,25 @@
+POST http://localhost:5223/contractors
+Content-Type: application/json
+
+{
+    "name": "Juan Paul 2",
+    "email": "JP2@vatican.it",
+    "password": "JeszczeJak2137"
+}
+
+###
+@id=4aea4b5f-2c65-47a7-b4be-347fcadd41b5
+GET http://localhost:5223/contractors/{{id}}
+###
+PUT http://localhost:5223/contractors/{{id}}
+Content-Type: application/json
+
+{
+    "name": "Juan Paul II",
+    "email": "JP2@vatican.it",
+    "password": "TakJakPanJezusPowiedział"
+}
+###
+GET http://localhost:5223/contractors/{{id}}
+###
+DELETE http://localhost:5223/contractors/{{id}}
