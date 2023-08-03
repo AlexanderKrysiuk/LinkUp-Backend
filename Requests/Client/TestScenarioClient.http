@@ -1,4 +1,4 @@
-POST http://localhost:5223/contractors
+POST http://localhost:5223/clients
 Content-Type: application/json
 
 {
@@ -9,9 +9,9 @@ Content-Type: application/json
 
 ###
 @id=4aea4b5f-2c65-47a7-b4be-347fcadd41b5
-GET http://localhost:5223/contractors/{{id}}
+GET http://localhost:5223/clients/{{id}}
 ###
-PUT http://localhost:5223/contractors/{{id}}
+PUT http://localhost:5223/clients/{{id}}
 Content-Type: application/json
 
 {
@@ -20,6 +20,6 @@ Content-Type: application/json
     "password": "TakJakPanJezusPowiedział"
 }
 ###
-GET http://localhost:5223/contractors/{{id}}
+GET http://localhost:5223/clients/{{id}}
 ###
-DELETE http://localhost:5223/contractors/{{id}}
+DELETE http://localhost:5223/clients/{{id}}

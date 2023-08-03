@@ -1,7 +1,7 @@
 using LinkUp.Services.Contractors;
 using LinkUp.Services.Contractors.Interfaces;
-using LinkUp.Infrastructure;
-using LinkUp.Infrastructure.Repositories;
+using LinkUp.Services.Clients;
+using LinkUp.Services.Clients.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policyBuilder =>
     {
         policyBuilder
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:2137")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IContractorService, ContractorService>(); 
-builder.Services.AddScoped<IUserRepository, UserMockRepository>();
+builder.Services.AddScoped<IClientService, ClientService>();
 var app = builder.Build();
 app.UseCors();
 // Configure the HTTP request pipeline.

@@ -19,4 +19,20 @@ public static class Errors
             description: "Contractor not found"
         );
     }
+
+    public static class Client
+    {
+        public static Error InvalidName => Error.Validation(
+            code: "Client.InvalidName",
+            description: $"Name must contain two parts"
+        );
+        public static Error InvalidEmail => Error.Validation(
+            code: "Client.InvalidEmail",
+            description: "Mail must contain @"
+        );
+        public static Error NotFound => Error.NotFound(
+            code: "Client.NotFound",
+            description: "Client not found"
+        );
+    }
 }

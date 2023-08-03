@@ -1,6 +1,6 @@
 @id=84db50e7-b6b1-4e0d-a597-915617de4335
 
-PUT http://localhost:5223/contractors/{{id}}
+PUT http://localhost:5223/clients/{{id}}
 Content-Type: application/json
 
 {
