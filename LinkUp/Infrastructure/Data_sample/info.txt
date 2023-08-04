@@ -1,0 +1,4 @@
+﻿in SQL Shell (as postgres):
+
+  1. CREATE USER LinkUpAdmin WITH ENCRYPTED PASSWORD 'LinkUpDatabase23';
+  2. CREATE DATABASE LinkUpDB OWNER LinkUpAdmin;
