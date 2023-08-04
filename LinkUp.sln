@@ -3,17 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkUp.Contracts", "LinkUp.Contracts\LinkUp.Contracts.csproj", "{BD6C3067-86A2-4CF4-A3BF-DEF302D1ECE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkUp.Contracts", "LinkUp.Contracts\LinkUp.Contracts.csproj", "{BD6C3067-86A2-4CF4-A3BF-DEF302D1ECE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkUp", "LinkUp\LinkUp.csproj", "{C5D1BED5-CDBC-4427-97E7-70B1B9DDA167}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkUp", "LinkUp\LinkUp.csproj", "{C5D1BED5-CDBC-4427-97E7-70B1B9DDA167}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataDB", "DataDB\DataDB.csproj", "{9220032E-93ED-42DA-BB5E-A1BB4C9534CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BD6C3067-86A2-4CF4-A3BF-DEF302D1ECE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -24,5 +23,12 @@ Global
 		{C5D1BED5-CDBC-4427-97E7-70B1B9DDA167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5D1BED5-CDBC-4427-97E7-70B1B9DDA167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5D1BED5-CDBC-4427-97E7-70B1B9DDA167}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9220032E-93ED-42DA-BB5E-A1BB4C9534CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9220032E-93ED-42DA-BB5E-A1BB4C9534CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9220032E-93ED-42DA-BB5E-A1BB4C9534CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9220032E-93ED-42DA-BB5E-A1BB4C9534CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
