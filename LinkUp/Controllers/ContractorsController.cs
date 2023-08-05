@@ -67,16 +67,16 @@ public class ContractorsController : ApiController
 
         var contractor = requestToContractorResult.Value;
 
-        var contractorToUpsert = _db.Contractors.Find(id);
-        if(contractorToUpsert == null)
+        var contractorFromDBToUpsert = _db.Contractors.Find(id);
+        if(contractorFromDBToUpsert == null)
         {
             _db.Contractors.Add(contractor);
             _db.SaveChanges();
         }
         else {
-            contractorToUpsert.Name = contractor.Name;
-            contractorToUpsert.Email = contractor.Email;
-            contractorToUpsert.Password = contractor.Password;
+            contractorFromDBToUpsert.Name = contractor.Name;
+            contractorFromDBToUpsert.Email = contractor.Email;
+            contractorFromDBToUpsert.Password = contractor.Password;
             _db.SaveChanges();
         }
 
