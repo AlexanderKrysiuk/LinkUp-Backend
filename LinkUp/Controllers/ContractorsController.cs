@@ -66,9 +66,22 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
+
+        var contractorToUpsert = _db.Contractors.Find(id);
+        if(contractorToUpsert == null)
+        {
+            _db.Contractors.Add(contractor);
+            _db.SaveChanges();
+        }
+        else {
+            contractorToUpsert.Name = contractor.Name;
+            contractorToUpsert.Email = contractor.Email;
+            contractorToUpsert.Password = contractor.Password;
+            _db.SaveChanges();
+        }
+
         ErrorOr<UpsertedContractor> upsertContractorResult = _contractorService.UpsertContractor(contractor);
 
-        // TODO: return 201 if a new contractor was created
         return upsertContractorResult.Match(
             upserted => upserted.IsNewlyCreated ? CreatedAtGetContractor(contractor) : NoContent(),
             errors => Problem(errors)
