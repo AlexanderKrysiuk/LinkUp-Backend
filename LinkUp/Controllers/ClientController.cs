@@ -7,6 +7,8 @@ using LinkUp.ServiceErrors;
 using LinkUp.Services.Clients;
 using LinkUp.Services.Clients.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using static LinkUp.ServiceErrors.Errors;
+using Client = LinkUp.Models.Client;
 
 namespace LinkUp.Controllers;
 
@@ -66,9 +68,23 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
+
+        var clientFromDBToUpsert = _db.Clients.Find(id);
+        if (clientFromDBToUpsert == null)
+        {
+            _db.Clients.Add(client);
+            _db.SaveChanges();
+        }
+        else
+        {
+            clientFromDBToUpsert.Name = client.Name;
+            clientFromDBToUpsert.Email = client.Email;
+            clientFromDBToUpsert.Password = client.Password;
+            _db.SaveChanges();
+        }
+
         ErrorOr<UpsertedClient> upsertClientResult = _clientService.UpsertClient(client);
 
-        // TODO: return 201 if a new client was created
         return upsertClientResult.Match(
             upserted => upserted.IsNewlyCreated ? CreatedAtGetClient(client) : NoContent(),
             errors => Problem(errors)
