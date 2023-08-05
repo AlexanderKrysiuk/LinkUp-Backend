@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 using LinkUp.Contollers;
 using LinkUp.Contracts.Client;
+using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
 using LinkUp.Services.Clients;
@@ -12,10 +13,12 @@ namespace LinkUp.Controllers;
 public class ClientsController : ApiController
 {
     private readonly IClientService _clientService;
+    private readonly AppDbContext _db;
 
-    public ClientsController(IClientService clientService)
+    public ClientsController(IClientService clientService, AppDbContext db)
     {
         _clientService = clientService;
+        _db = db;
     }
 
     [HttpPost]
@@ -29,7 +32,10 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
-        // TODO: save client to database
+
+        _db.Clients.Add(client);
+        _db.SaveChanges();
+
         ErrorOr<Created> createContratorResult = _clientService.CreateClient(client);
 
         return createContratorResult.Match(

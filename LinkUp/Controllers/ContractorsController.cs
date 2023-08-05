@@ -32,7 +32,7 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
-        // TODO: save contractor to database
+        
         _db.Contractors.Add(contractor);
         _db.SaveChanges();
 
