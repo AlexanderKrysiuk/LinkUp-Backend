@@ -11,5 +11,12 @@ namespace LinkUp.Infrastructure.Data
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Contractor>().HasKey(x => x.Id);
+            modelBuilder.Entity<Client>().HasKey(x => x.Id);
+            base.OnModelCreating(modelBuilder);
+        }
+
     }
 }
