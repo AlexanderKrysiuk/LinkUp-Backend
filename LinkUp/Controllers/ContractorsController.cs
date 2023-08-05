@@ -1,6 +1,7 @@
 using ErrorOr;
 using LinkUp.Contollers;
 using LinkUp.Contracts.Contractor;
+using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
 using LinkUp.Services.Contractors;
@@ -12,10 +13,12 @@ namespace LinkUp.Controllers;
 public class ContractorsController : ApiController
 {
     private readonly IContractorService _contractorService;
+    private readonly AppDbContext _db;
 
-    public ContractorsController(IContractorService contractorService)
+    public ContractorsController(IContractorService contractorService, AppDbContext db)
     {
         _contractorService = contractorService;
+        _db = db;
     }
 
     [HttpPost]
@@ -30,6 +33,9 @@ public class ContractorsController : ApiController
 
         var contractor = requestToContractorResult.Value;
         // TODO: save contractor to database
+        _db.Contractors.Add(contractor);
+        _db.SaveChanges();
+
         ErrorOr<Created> createContratorResult = _contractorService.CreateContractor(contractor);
 
         return createContratorResult.Match(
