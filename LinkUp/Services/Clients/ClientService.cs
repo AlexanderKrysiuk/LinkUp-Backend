@@ -65,23 +65,24 @@ public class ClientService : IClientService
 
     public ErrorOr<UpsertedClient> UpsertClient(Client client)
     {
-        var IsNewlyCreated = !_clients.ContainsKey(client.Id);
-        _clients[client.Id] = client;
+        //_clients[client.Id] = client;
 
         //OR IN CONTROLLER
         var clientFromDBToUpsert = _db.Clients.Find(client.Id);
-        if (clientFromDBToUpsert == null)
+
+        var IsNewlyCreated = clientFromDBToUpsert == null;
+
+        if (IsNewlyCreated)
         {
-            _db.Clients.Add(client);
-            _db.SaveChanges();
+            _db.Clients.Add(client); 
         }
         else
         {
             clientFromDBToUpsert.Name = client.Name;
             clientFromDBToUpsert.Email = client.Email;
             clientFromDBToUpsert.Password = client.Password;
-            _db.SaveChanges();
         }
+        _db.SaveChanges();
         //ENDOF
 
         return new UpsertedClient(IsNewlyCreated);
