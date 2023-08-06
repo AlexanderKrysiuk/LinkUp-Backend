@@ -14,9 +14,6 @@ public class ContractorsController : ApiController
 {
     private readonly IContractorService _contractorService;
     
-    //NEEDED IF NOT IN SERVICE
-    //private readonly AppDbContext _db; + add to constructor
-
     public ContractorsController(IContractorService contractorService)
     {
         _contractorService = contractorService;
@@ -33,8 +30,6 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
-
-        //COPY-PASTE FROM SERVICE
 
         ErrorOr<Created> createContratorResult = _contractorService.CreateContractor(contractor);
 
@@ -66,8 +61,6 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
-
-        //COPY-PASTE FROM SERVICE
 
         ErrorOr<UpsertedContractor> upsertContractorResult = _contractorService.UpsertContractor(contractor);
 

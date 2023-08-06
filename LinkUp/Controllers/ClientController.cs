@@ -16,9 +16,6 @@ public class ClientsController : ApiController
 {
     private readonly IClientService _clientService;
     
-    //NEEDED IF NOT IN SERVICE
-    //private readonly AppDbContext _db; + add to constructor
-
     public ClientsController(IClientService clientService)
     {
         _clientService = clientService;
@@ -35,8 +32,6 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
-
-        //COPY-PASTE FROM SERVICE
 
         ErrorOr<Created> createContratorResult = _clientService.CreateClient(client);
 
@@ -68,8 +63,6 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
-
-        //COPY-PASTE FROM SERVICE
 
         ErrorOr<UpsertedClient> upsertClientResult = _clientService.UpsertClient(client);
 
