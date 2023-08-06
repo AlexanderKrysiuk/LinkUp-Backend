@@ -3,6 +3,8 @@ using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
 using LinkUp.Services.Contractors.Interfaces;
+using static LinkUp.ServiceErrors.Errors;
+using Contractor = LinkUp.Models.Contractor;
 
 namespace LinkUp.Services.Contractors;
 
@@ -65,24 +67,24 @@ public class ContractorService : IContractorService
 
     public ErrorOr<UpsertedContractor> UpsertContractor(Contractor contractor)
     {
-        var IsNewlyCreated = !_contractors.ContainsKey(contractor.Id);
-        _contractors[contractor.Id] = contractor;
+        //var IsNewlyCreated = !_contractors.ContainsKey(contractor.Id);
+        //_contractors[contractor.Id] = contractor;
 
-        //OR IN CONTROLLER
         var contractorFromDBToUpsert = _db.Contractors.Find(contractor.Id);
-        if (contractorFromDBToUpsert == null)
+
+        var IsNewlyCreated = contractorFromDBToUpsert == null;
+
+        if (IsNewlyCreated)
         {
             _db.Contractors.Add(contractor);
-            _db.SaveChanges();
         }
         else
         {
             contractorFromDBToUpsert.Name = contractor.Name;
             contractorFromDBToUpsert.Email = contractor.Email;
             contractorFromDBToUpsert.Password = contractor.Password;
-            _db.SaveChanges();
         }
-        //ENDOF
+        _db.SaveChanges();
 
         return new UpsertedContractor(IsNewlyCreated);
     }
