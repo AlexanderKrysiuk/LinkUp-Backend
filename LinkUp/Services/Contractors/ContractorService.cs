@@ -40,9 +40,14 @@ public class ContractorService : IContractorService
 
     public ErrorOr<Contractor> GetContractor(Guid id)
     {
-        if (_contractors.TryGetValue(id, out var contractor))
+        //if (_contractors.TryGetValue(id, out var contractor))
+        //{
+        //    return contractor;
+        //}
+        var contractorFromDB = _db.Contractors.Find(id);
+        if (contractorFromDB != null)
         {
-            return contractor;
+            return contractorFromDB;
         }
 
         return Errors.Contractor.NotFound;
