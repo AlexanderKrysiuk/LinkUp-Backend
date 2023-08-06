@@ -15,12 +15,13 @@ namespace LinkUp.Controllers;
 public class ClientsController : ApiController
 {
     private readonly IClientService _clientService;
-    private readonly AppDbContext _db;
+    
+    //NEEDED IF NOT IN SERVICE
+    //private readonly AppDbContext _db; + add to constructor
 
-    public ClientsController(IClientService clientService, AppDbContext db)
+    public ClientsController(IClientService clientService)
     {
         _clientService = clientService;
-        _db = db;
     }
 
     [HttpPost]
@@ -35,8 +36,7 @@ public class ClientsController : ApiController
 
         var client = requestToClientResult.Value;
 
-        _db.Clients.Add(client);
-        _db.SaveChanges();
+        //COPY-PASTE FROM SERVICE
 
         ErrorOr<Created> createContratorResult = _clientService.CreateClient(client);
 
@@ -69,19 +69,7 @@ public class ClientsController : ApiController
 
         var client = requestToClientResult.Value;
 
-        var clientFromDBToUpsert = _db.Clients.Find(id);
-        if (clientFromDBToUpsert == null)
-        {
-            _db.Clients.Add(client);
-            _db.SaveChanges();
-        }
-        else
-        {
-            clientFromDBToUpsert.Name = client.Name;
-            clientFromDBToUpsert.Email = client.Email;
-            clientFromDBToUpsert.Password = client.Password;
-            _db.SaveChanges();
-        }
+        //COPY-PASTE FROM SERVICE
 
         ErrorOr<UpsertedClient> upsertClientResult = _clientService.UpsertClient(client);
 
