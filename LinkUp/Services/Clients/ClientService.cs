@@ -40,9 +40,15 @@ public class ClientService : IClientService
 
     public ErrorOr<Client> GetClient(Guid id)
     {
-        if (_clients.TryGetValue(id, out var client))
+        //if (_clients.TryGetValue(id, out var client))
+        //{
+        //    return client;
+        //}
+
+        var clientFromDB = _db.Clients.Find(id);
+        if (clientFromDB != null)
         {
-            return client;
+            return clientFromDB;
         }
 
         return Errors.Client.NotFound;
