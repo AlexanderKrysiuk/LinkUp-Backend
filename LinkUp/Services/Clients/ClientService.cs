@@ -54,7 +54,7 @@ public class ClientService : IClientService
         _clients[client.Id] = client;
 
         //OR IN CONTROLLER
-        var clientFromDBToUpsert = _db.Clients.Find(id);
+        var clientFromDBToUpsert = _db.Clients.Find(client.Id);
         if (clientFromDBToUpsert == null)
         {
             _db.Clients.Add(client);
