@@ -21,7 +21,7 @@ public class ContractorService : IContractorService
 
     public ErrorOr<Created> CreateContractor(Contractor contractor)
     {
-        _contractors.Add(contractor.Id, contractor);
+        //_contractors.Add(contractor.Id, contractor);
 
         //OR IN CONTROLLER
         _db.Contractors.Add(contractor);
@@ -33,9 +33,19 @@ public class ContractorService : IContractorService
 
     public ErrorOr<Deleted> DeleteContractor(Guid id)
     {
-        _contractors.Remove(id);
+        //_contractors.Remove(id);
 
-        return Result.Deleted;
+        //return Result.Deleted;
+
+        var contractorFromDB = _db.Contractors.Find(id);
+        if (contractorFromDB != null)
+        {
+            _db.Contractors.Remove(contractorFromDB);
+            _db.SaveChanges();
+            return Result.Deleted;
+        }
+
+        return Errors.Contractor.NotFound;
     }
 
     public ErrorOr<Contractor> GetContractor(Guid id)
