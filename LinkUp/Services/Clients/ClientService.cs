@@ -21,7 +21,7 @@ public class ClientService : IClientService
 
     public ErrorOr<Created> CreateClient(Client client)
     {
-        _clients.Add(client.Id, client);
+        //_clients.Add(client.Id, client);
 
         //OR IN CONTROLLER
         _db.Clients.Add(client);
@@ -33,9 +33,18 @@ public class ClientService : IClientService
 
     public ErrorOr<Deleted> DeleteClient(Guid id)
     {
-        _clients.Remove(id);
+        //_clients.Remove(id);
+        //return Result.Deleted;
 
-        return Result.Deleted;
+        var clientFromDB = _db.Clients.Find(id);
+        if (clientFromDB != null)
+        {
+            _db.Clients.Remove(clientFromDB);
+            _db.SaveChanges();
+            return Result.Deleted;
+        }
+
+        return Errors.Client.NotFound;
     }
 
     public ErrorOr<Client> GetClient(Guid id)
