@@ -13,12 +13,13 @@ namespace LinkUp.Controllers;
 public class ContractorsController : ApiController
 {
     private readonly IContractorService _contractorService;
-    private readonly AppDbContext _db;
+    
+    //NEEDED IF NOT IN SERVICE
+    //private readonly AppDbContext _db; + add to constructor
 
-    public ContractorsController(IContractorService contractorService, AppDbContext db)
+    public ContractorsController(IContractorService contractorService)
     {
         _contractorService = contractorService;
-        _db = db;
     }
 
     [HttpPost]
@@ -32,9 +33,8 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
-        
-        _db.Contractors.Add(contractor);
-        _db.SaveChanges();
+
+        //COPY-PASTE FROM SERVICE
 
         ErrorOr<Created> createContratorResult = _contractorService.CreateContractor(contractor);
 
@@ -67,18 +67,7 @@ public class ContractorsController : ApiController
 
         var contractor = requestToContractorResult.Value;
 
-        var contractorFromDBToUpsert = _db.Contractors.Find(id);
-        if(contractorFromDBToUpsert == null)
-        {
-            _db.Contractors.Add(contractor);
-            _db.SaveChanges();
-        }
-        else {
-            contractorFromDBToUpsert.Name = contractor.Name;
-            contractorFromDBToUpsert.Email = contractor.Email;
-            contractorFromDBToUpsert.Password = contractor.Password;
-            _db.SaveChanges();
-        }
+        //COPY-PASTE FROM SERVICE
 
         ErrorOr<UpsertedContractor> upsertContractorResult = _contractorService.UpsertContractor(contractor);
 
