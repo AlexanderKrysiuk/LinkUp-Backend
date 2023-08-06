@@ -8,34 +8,23 @@ namespace LinkUp.Services.Clients;
 
 public class ClientService : IClientService
 {
-    private static readonly Dictionary<Guid, Client> _clients = new();
-
-    //NOT NEEDED IF IN CONTROLLER
     private readonly AppDbContext _db;
 
     public ClientService(AppDbContext db)
     {
         _db = db;
     }
-    //ENDOF
 
     public ErrorOr<Created> CreateClient(Client client)
     {
-        //_clients.Add(client.Id, client);
-
-        //OR IN CONTROLLER
         _db.Clients.Add(client);
         _db.SaveChanges();
-        //ENDOF
 
         return Result.Created;
     }
 
     public ErrorOr<Deleted> DeleteClient(Guid id)
     {
-        //_clients.Remove(id);
-        //return Result.Deleted;
-
         var clientFromDB = _db.Clients.Find(id);
         if (clientFromDB != null)
         {
@@ -49,11 +38,6 @@ public class ClientService : IClientService
 
     public ErrorOr<Client> GetClient(Guid id)
     {
-        //if (_clients.TryGetValue(id, out var client))
-        //{
-        //    return client;
-        //}
-
         var clientFromDB = _db.Clients.Find(id);
         if (clientFromDB != null)
         {
@@ -65,9 +49,6 @@ public class ClientService : IClientService
 
     public ErrorOr<UpsertedClient> UpsertClient(Client client)
     {
-        //_clients[client.Id] = client;
-
-        //OR IN CONTROLLER
         var clientFromDBToUpsert = _db.Clients.Find(client.Id);
 
         var IsNewlyCreated = clientFromDBToUpsert == null;
@@ -83,7 +64,6 @@ public class ClientService : IClientService
             clientFromDBToUpsert.Password = client.Password;
         }
         _db.SaveChanges();
-        //ENDOF
 
         return new UpsertedClient(IsNewlyCreated);
     }
