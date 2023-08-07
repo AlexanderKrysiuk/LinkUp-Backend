@@ -5,7 +5,7 @@ namespace LinkUp.Controllers;
 public class ErrorController : ControllerBase
 {
     [Route("/error")]
-    public IActionResult Error()
+    protected IActionResult Error()
     {
         return Problem();
     }
