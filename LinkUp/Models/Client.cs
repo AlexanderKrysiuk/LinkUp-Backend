@@ -7,10 +7,10 @@ namespace LinkUp.Models;
 
 public class Client
 {
-    public Guid Id {get;}
-    public string Name {get;}
-    public string Email {get;}
-    public string Password {get;}
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Password { get; set; }
 
     private Client(Guid Id, string Name, string Email, string Password)
     {

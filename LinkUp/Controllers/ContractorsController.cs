@@ -1,6 +1,7 @@
 using ErrorOr;
 using LinkUp.Contollers;
 using LinkUp.Contracts.Contractor;
+using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
 using LinkUp.Services.Contractors;
@@ -12,7 +13,7 @@ namespace LinkUp.Controllers;
 public class ContractorsController : ApiController
 {
     private readonly IContractorService _contractorService;
-
+    
     public ContractorsController(IContractorService contractorService)
     {
         _contractorService = contractorService;
@@ -29,7 +30,7 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
-        // TODO: save contractor to database
+
         ErrorOr<Created> createContratorResult = _contractorService.CreateContractor(contractor);
 
         return createContratorResult.Match(
@@ -60,9 +61,9 @@ public class ContractorsController : ApiController
         }
 
         var contractor = requestToContractorResult.Value;
+
         ErrorOr<UpsertedContractor> upsertContractorResult = _contractorService.UpsertContractor(contractor);
 
-        // TODO: return 201 if a new contractor was created
         return upsertContractorResult.Match(
             upserted => upserted.IsNewlyCreated ? CreatedAtGetContractor(contractor) : NoContent(),
             errors => Problem(errors)
