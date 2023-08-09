@@ -1,18 +1,21 @@
 ﻿using ErrorOr;
 using LinkUp.Contollers;
 using LinkUp.Contracts.Client;
+using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
 using LinkUp.ServiceErrors;
 using LinkUp.Services.Clients;
 using LinkUp.Services.Clients.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using static LinkUp.ServiceErrors.Errors;
+using Client = LinkUp.Models.Client;
 
 namespace LinkUp.Controllers;
 
 public class ClientsController : ApiController
 {
     private readonly IClientService _clientService;
-
+    
     public ClientsController(IClientService clientService)
     {
         _clientService = clientService;
@@ -29,10 +32,10 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
-        // TODO: save client to database
-        ErrorOr<Created> createContratorResult = _clientService.CreateClient(client);
 
-        return createContratorResult.Match(
+        ErrorOr<Created> createClientResult = _clientService.CreateClient(client);
+
+        return createClientResult.Match(
             created => CreatedAtGetClient(client),
             errors => Problem(errors)
         );
@@ -60,9 +63,9 @@ public class ClientsController : ApiController
         }
 
         var client = requestToClientResult.Value;
+
         ErrorOr<UpsertedClient> upsertClientResult = _clientService.UpsertClient(client);
 
-        // TODO: return 201 if a new client was created
         return upsertClientResult.Match(
             upserted => upserted.IsNewlyCreated ? CreatedAtGetClient(client) : NoContent(),
             errors => Problem(errors)
