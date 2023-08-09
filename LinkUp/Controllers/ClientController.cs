@@ -33,9 +33,9 @@ public class ClientsController : ApiController
 
         var client = requestToClientResult.Value;
 
-        ErrorOr<Created> createContratorResult = _clientService.CreateClient(client);
+        ErrorOr<Created> createClientResult = _clientService.CreateClient(client);
 
-        return createContratorResult.Match(
+        return createClientResult.Match(
             created => CreatedAtGetClient(client),
             errors => Problem(errors)
         );
