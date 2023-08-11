@@ -1,7 +1,7 @@
 namespace LinkUp.Contracts.FreeTerm;
 
 public record CreateFreeTermRequest(
-    Contractor.Id ContractorId,
+    Guid ContractorId,
     DateTime StartDateTime,
     DateTime EndDateTime
-)
+);

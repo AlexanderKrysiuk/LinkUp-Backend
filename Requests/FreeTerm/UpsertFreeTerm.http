@@ -1,0 +1,9 @@
+@id=030b4a82-1b7c-11cf-9d53-00aa003c9cb6
+PUT http://localhost:5223/freeterms/{{id}}
+Content-Type: application/json
+
+{
+    "contractorId": "030B4A82-1B7C-11CF-9D53-00AA003C9CB6",
+    "startDateTime": "2022-05-08T08:00:00",
+    "endDateTime": "2022-04-08T08:00:00"
+}

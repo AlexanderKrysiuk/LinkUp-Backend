@@ -1,8 +1,7 @@
 namespace LinkUp.Contracts.FreeTerm;
 
 public record UpsertFreeTermRequest(
-    Guid Id,
-    Contractor.Id ContractorId,
+    Guid ContractorId,
     DateTime StartDateTime,
     DateTime EndDateTime
-)
+);
