@@ -1,29 +1,67 @@
 using LinkUp.Contracts.FreeTerm;
+using LinkUp.Models;
+using LinkUp.Services.FreeTerms.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 namespace LinkUp.Controllers;
 
 [ApiController]
+[Route("[controller]")]
 public class FreeTermsController : ControllerBase
 {
-    [HttpPost("/freeterms")]
-    public IActionResult CreateFreeTerm(CreateFreeTermRequest request)
+    private readonly IFreeTermService _freeTermService;
+
+    public FreeTermsController(IFreeTermService freeTermService)
     {
-        return Ok(request);
+        _freeTermService = freeTermService;
     }
 
-    [HttpGet("/freeterms/{id:guid}")]
+    [HttpPost]
+    public IActionResult CreateFreeTerm(Guid ContractorId, CreateFreeTermRequest request)
+    {
+        var freeTerm = new FreeTerm(
+            Guid.NewGuid(),
+            ContractorId,
+            request.StartDateTime,
+            request.EndDateTime
+        );
+
+        _freeTermService.CreateFreeTerm(freeTerm);
+
+        //TODO: save freeterm to database
+        var respone = new FreeTermResponse(
+            freeTerm.Id,
+            freeTerm.ContractorId,
+            freeTerm.StartDateTime,
+            freeTerm.EndDateTime
+        );
+        return CreatedAtAction(
+            nameof(GetFreeTerm),
+            routeValues: new { id = freeTerm.Id },
+             value: respone);
+    }
+
+    [HttpGet("{id:guid}")]
     public IActionResult GetFreeTerm(Guid id)
     {
-        return Ok(id);
+        FreeTerm freeTerm = _freeTermService.GetFreeTerm(id);
+        
+        var response = new FreeTermResponse(
+            freeTerm.Id,
+            freeTerm.ContractorId,
+            freeTerm.StartDateTime,
+            freeTerm.EndDateTime
+        );
+
+        return Ok(response);
     }
 
-    [HttpPut("/freeterms/{id:guid}")]
+    [HttpPut("{id:guid}")]
     public IActionResult UpsertFreeTerm(Guid id, UpsertFreeTermRequest request)
     {
         return Ok(request);
     }
 
-    [HttpDelete("/freeterms/{id:guid}")]
+    [HttpDelete("{id:guid}")]
     public IActionResult DeleteFreeTerm(Guid id)
     {
         return Ok(id);
