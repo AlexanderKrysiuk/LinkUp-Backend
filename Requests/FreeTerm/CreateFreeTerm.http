@@ -2,7 +2,7 @@ POST http://localhost:5223/freeterms
 Content-Type: application/json
 
 {
-    "contractorId": "030B4A82-1B7C-11CF-9D53-00AA003C9CB6",
+    "contractorId": "e17cc2ff-cc32-4b56-b367-9c20b2d3f679",
     "startDateTime": "2022-04-08T08:00:00",
     "endDateTime": "2022-04-08T08:00:00"
 }

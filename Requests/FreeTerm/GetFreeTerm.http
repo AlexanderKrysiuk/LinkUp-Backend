@@ -1,3 +1,2 @@
-@id=030b4a82-1b7c-11cf-9d53-00aa003c9cb6
-
+@id=e17cc2ff-cc32-4b56-b367-9c20b2d3f679
 GET http://localhost:5223/freeterms/{{id}}

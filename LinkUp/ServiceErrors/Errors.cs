@@ -35,4 +35,12 @@ public static class Errors
             description: "Client not found"
         );
     }
+
+    public static class FreeTerm
+    {
+        public static Error NotFound => Error.NotFound(
+            code: "FreeTerm.NotFound",
+            description: "Free term not found"
+        );
+    }
 }
