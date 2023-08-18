@@ -12,6 +12,7 @@ using Client = LinkUp.Models.Client;
 
 namespace LinkUp.Controllers;
 
+//[Route("api/[controller]")]
 public class ClientsController : ApiController
 {
     private readonly IClientService _clientService;
