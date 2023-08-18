@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace LinkUp.Contollers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class ApiController : ControllerBase{
     protected IActionResult Problem(List<Error> errors){
         if (errors.All(e => e.Type == ErrorType.Validation)){
