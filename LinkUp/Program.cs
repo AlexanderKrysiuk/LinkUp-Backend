@@ -1,7 +1,5 @@
-using LinkUp.Services.Contractors;
-using LinkUp.Services.Contractors.Interfaces;
-using LinkUp.Services.Clients;
-using LinkUp.Services.Clients.Interfaces;
+using LinkUp.Services.Users;
+using LinkUp.Services.Users.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LinkUp.Infrastructure.Data;
 
@@ -24,8 +22,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IContractorService, ContractorService>(); 
-builder.Services.AddScoped<IClientService, ClientService>();
+//builder.Services.AddScoped<IContractorService, ContractorService>(); 
+builder.Services.AddScoped<IUserService, UserService>();
 var app = builder.Build();
 app.UseCors();
 // Configure the HTTP request pipeline.
