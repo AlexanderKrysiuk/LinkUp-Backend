@@ -5,7 +5,7 @@ using LinkUp.ServiceErrors;
 using LinkUp.Services.Users;
 using LinkUp.Services.Users.Interfaces;
 
-namespace LinkUp.Services.Clients;
+namespace LinkUp.Services.Users;
 
 public class UserService : IUserService
 {

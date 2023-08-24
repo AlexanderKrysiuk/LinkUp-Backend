@@ -1,14 +1,11 @@
 ﻿using ErrorOr;
 using LinkUp.Contollers;
 using LinkUp.Contracts.User;
-using LinkUp.Infrastructure.Data;
 using LinkUp.Models;
-using LinkUp.ServiceErrors;
 using LinkUp.Services.Users;
 using LinkUp.Services.Users.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using static LinkUp.ServiceErrors.Errors;
-using User = LinkUp.Models.User;
+//using User = LinkUp.Models.User;
 
 namespace LinkUp.Controllers;
 
@@ -24,7 +21,7 @@ public class UsersController : ApiController
     [HttpPost]
     public IActionResult CreateUser(CreateUserRequest request)
     {
-        ErrorOr<User> requestToUserResult = User.From(request);
+        ErrorOr<User> requestToUserResult = Models.User.From(request);
 
         if (requestToUserResult.IsError)
         {
@@ -55,7 +52,7 @@ public class UsersController : ApiController
     [HttpPut("{id:guid}")]
     public IActionResult UpsertUser(Guid id, UpsertUserRequest request)
     {
-        ErrorOr<User> requestToUserResult = User.From(id, request);
+        ErrorOr<User> requestToUserResult = Models.User.From(id, request);
 
         if (requestToUserResult.IsError)
         {
