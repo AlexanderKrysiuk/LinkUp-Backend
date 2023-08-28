@@ -52,7 +52,7 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> AccessDenied()
     {
-        return Accepted();
+        return Forbid();
     }
 
 }
