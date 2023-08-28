@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 25.0.1706.3
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkUpBackend", "LinkUpBackend.csproj", "{B46CAB6D-589F-41F3-9326-EFC152A81BFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkUpBackend", "LinkUpBackend.csproj", "{B46CAB6D-589F-41F3-9326-EFC152A81BFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,14 +1,19 @@
-﻿using LinkUpBackend.Domain;
+﻿using LinkUpBackend.Configurations;
+using LinkUpBackend.Domain;
 using LinkUpBackend.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")).LogTo(Console.WriteLine, LogLevel.Information).EnableSensitiveDataLogging());
 
 builder.Services.AddIdentity<User, Role>(options =>
@@ -25,6 +30,38 @@ builder.Services.AddIdentity<User, Role>(options =>
                         //options.SignIn.RequireConfirmedEmail = true;
 
                     }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+//TODO: fix as gives error :<
+builder.Services.AddOptions<JwtConfiguration>().Bind(builder.Configuration.GetSection(JwtConfiguration.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+builder.Services.AddAuthentication()
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new()
+            {
+                ValidateIssuer = true,
+                ValidIssuer = builder.Configuration["Authentication:Jwt:Issuer"],
+
+                ValidateAudience = true,
+                ValidAudience = builder.Configuration["Authentication:Jwt:Audience"],
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:Jwt:SigningKey"]!))
+            };
+        });
+
+builder.Services.AddAuthorization(options =>
+{
+    var defualtAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
+        JwtBearerDefaults.AuthenticationScheme);
+    defualtAuthorizationPolicyBuilder.RequireAuthenticatedUser();
+    
+    options.DefaultPolicy = defualtAuthorizationPolicyBuilder.Build();
+
+    //add policies
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
