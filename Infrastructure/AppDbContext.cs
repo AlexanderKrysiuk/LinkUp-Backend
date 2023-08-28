@@ -14,6 +14,23 @@ namespace LinkUpBackend.Infrastructure
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Role>().HasData(new List<Role>
+            {
+                new Role
+                {
+                    Id = Guid.NewGuid().ToString(), Name = "Client", NormalizedName = "CLIENT"
+                },
+                new Role
+                {
+                    Id = Guid.NewGuid().ToString(), Name = "Contractor", NormalizedName = "CONTRACTOR"
+                },
+                new Role
+                {
+                    Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN"
+                },
+            }
+            );
         }
     }
 }
