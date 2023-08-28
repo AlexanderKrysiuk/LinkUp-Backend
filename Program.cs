@@ -43,14 +43,3 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
-//var roleManager = builder.
-//var roles = new List<string> { "Admin", "Moderator", "User" };
-
-//foreach (var role in roles)
-//{
-//    if (!roleManager.RoleExistsAsync(role).Result)
-//    {
-//        roleManager.CreateAsync(new IdentityRole(role)).Wait();
-//    }
-//}
