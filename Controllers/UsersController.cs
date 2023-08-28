@@ -1,36 +1,40 @@
-﻿
+﻿using LinkUpBackend.Configurations;
 using LinkUpBackend.Domain;
 using LinkUpBackend.DTOs;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace LinkUpBackend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-//Authorize
+[Route("api")]
+[Authorize]
 public class UsersController : ControllerBase
 {
 
     private readonly UserManager<User> _userManager;
 
-    private readonly RoleManager<Role> _roleManager;
+    private readonly JwtConfiguration _jwtConfiguration;
 
     private readonly SignInManager<User> _signInManager;
 
-    private readonly ILogger<UsersController> _logger;
+    //private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<User> userManager, ILogger<UsersController> logger, RoleManager<Role> roleManager, SignInManager<User> signInManager)
+    public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager, SignInManager<User> signInManager, JwtConfiguration jwtConfiguration)
     {
         _userManager = userManager;
-        _logger = logger;
-        _roleManager = roleManager;
+        _jwtConfiguration = jwtConfiguration;
         _signInManager = signInManager;
     }
 
 
-    [HttpOptions("register")]
+    [HttpOptions("sign-up")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -60,7 +64,7 @@ public class UsersController : ControllerBase
     }
 
 
-    [HttpOptions("login")]
+    [HttpOptions("sign-in")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -75,20 +79,30 @@ public class UsersController : ControllerBase
 
             if (signInResult.Succeeded)
             {
-                // Generate token or perform other login-related tasks
-                return Ok("Logged in successfully.");
+                var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email) };
+
+                var role = await _userManager.GetRolesAsync(userToLoginResult);
+
+                var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.SigningKey)), SecurityAlgorithms.HmacSha256);
+
+                var jwtObject = new JwtSecurityToken(issuer: _jwtConfiguration.Issuer, audience: _jwtConfiguration.Audience, claims: claims, expires: DateTime.Now.AddDays(1), signingCredentials: signingCredentials);
+
+                var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtObject);
+
+                return Accepted(new { Token = tokenToReturn });
             }
         }
         return Unauthorized(userToLoginResult);
     }
 
 
-    [HttpOptions("logout")]
+    [HttpOptions("sign-out")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Logout()
     {
+        await _signInManager.SignOutAsync();
         return Accepted();
     }
 
