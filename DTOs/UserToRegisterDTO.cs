@@ -18,6 +18,6 @@ public class UserToRegisterDTO
     public string Password { get; set; } = string.Empty;
 
     [Required]
-    public ICollection<string> Roles { get; set; } = new List<string>();
+    public string Role { get; set; } = string.Empty;
 }
 
