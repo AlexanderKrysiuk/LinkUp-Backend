@@ -1,5 +1,7 @@
 ﻿
+using LinkUpBackend.Domain;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUpBackend.Controllers;
@@ -9,9 +11,15 @@ namespace LinkUpBackend.Controllers;
 //[Authorize]
 public class UsersController : ControllerBase
 {
-    public UsersController()
-    {
 
+    private readonly UserManager<User> _userManager;
+
+    private readonly ILogger<UsersController> _logger;
+
+    public UsersController(UserManager<User> userManager, ILogger<UsersController> logger)
+    {
+        _userManager = userManager;
+        _logger = logger;
     }
 
 
