@@ -15,17 +15,20 @@ public class UsersController : ControllerBase
 
     private readonly UserManager<User> _userManager;
 
+    private readonly RoleManager<Role> _roleManager;
+
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<User> userManager, ILogger<UsersController> logger)
+    public UsersController(UserManager<User> userManager, ILogger<UsersController> logger, RoleManager<Role> roleManager)
     {
         _userManager = userManager;
         _logger = logger;
+        _roleManager = roleManager;
     }
 
 
     [HttpOptions("register")]
-    [ResponseCache(CacheProfileName = "NoCache")]
+    //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,17 +38,22 @@ public class UsersController : ControllerBase
         var user = new User();
         user.UserName = userToRegister.Username;
         user.Email = userToRegister.Email;
-        
-        //TODO: nadać rolę! -> userToRegister.Roles
-
+               
         var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
 
         if(!userRegistrationResult.Succeeded)
         {
-            throw new Exception();
+            throw new Exception(); //TODO: error handling
         }
-        
-        return Accepted();
+
+        var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
+
+        if(!userToRoleResult.Succeeded)
+        {
+            throw new Exception(); //TODO: error handling
+        }
+
+        return Accepted($"User {user.UserName} has been registered.");
     }
 
 
