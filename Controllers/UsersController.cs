@@ -64,7 +64,6 @@ public class UsersController : ControllerBase
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> LoginAsync([FromBody] UserToLoginDTO userToLogin)
     {
@@ -77,15 +76,9 @@ public class UsersController : ControllerBase
             if (signInResult.Succeeded)
             {
                 // Generate token or perform other login-related tasks
-                // Return success response
                 return Ok("Logged in successfully.");
             }
-            else
-            {
-                return BadRequest("Invalid login attempt.");
-            }
         }
-
         return Unauthorized(userToLoginResult);
     }
 
