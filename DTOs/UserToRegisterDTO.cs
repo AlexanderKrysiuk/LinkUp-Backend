@@ -2,11 +2,11 @@
 
 namespace LinkUpBackend.DTOs;
 
-public class UserForRegistationDTO
+public class UserToRegisterDTO
 {
     [Required]
     [MaxLength(256)]
-    public string UserName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress]
