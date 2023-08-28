@@ -4,5 +4,6 @@ namespace LinkUpBackend.Domain
 {
     public class User : IdentityUser
     {
+        
     }
 }
