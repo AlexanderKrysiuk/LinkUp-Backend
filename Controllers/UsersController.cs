@@ -1,5 +1,6 @@
 ﻿
 using LinkUpBackend.Domain;
+using LinkUpBackend.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace LinkUpBackend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+//Authorize
 public class UsersController : ControllerBase
 {
 
@@ -29,8 +30,21 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Register()
+    public async Task<IActionResult> RegisterAsync([FromBody] UserToRegisterDTO userToRegister)
     {
+        var user = new User();
+        user.UserName = userToRegister.Username;
+        user.Email = userToRegister.Email;
+        
+        //TODO: nadać rolę! -> userToRegister.Roles
+
+        var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
+
+        if(!userRegistrationResult.Succeeded)
+        {
+            throw new Exception();
+        }
+        
         return Accepted();
     }
 
