@@ -79,7 +79,7 @@ public class UsersController : ControllerBase
 
             if (signInResult.Succeeded)
             {
-                var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email) };
+                var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email!) };
 
                 var role = await _userManager.GetRolesAsync(userToLoginResult);
 
@@ -109,7 +109,7 @@ public class UsersController : ControllerBase
     [HttpOptions("access-denied")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
-    public async Task<IActionResult> AccessDenied()
+    public IActionResult AccessDenied()
     {
         return Forbid();
     }
