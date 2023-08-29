@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿/*
+using System.ComponentModel.DataAnnotations;
 
 namespace LinkUpBackend.Configurations;
 
@@ -18,3 +19,4 @@ public class JwtConfiguration
     [MaxLength(256)]
     public string SigningKey { get; set; } = default!;
 }
+*/

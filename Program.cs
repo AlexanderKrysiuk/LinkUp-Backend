@@ -1,4 +1,4 @@
-﻿using LinkUpBackend.Configurations;
+﻿//using LinkUpBackend.Configurations;
 using LinkUpBackend.Domain;
 using LinkUpBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -43,10 +43,12 @@ builder.Services.AddIdentity<User, Role>(options =>
                     }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 //TODO: fix as gives error :<
+/*
 builder.Services.AddOptions<JwtConfiguration>().Bind(builder.Configuration.GetSection(JwtConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
-
+*/
+/*
 builder.Services.AddAuthentication()
         .AddJwtBearer(options =>
         {
@@ -62,7 +64,8 @@ builder.Services.AddAuthentication()
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:Jwt:SigningKey"]!))
             };
         });
-
+*/
+/*
 builder.Services.AddAuthorization(options =>
 {
     var defualtAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
@@ -73,7 +76,7 @@ builder.Services.AddAuthorization(options =>
 
     //add policies
 });
-
+*/
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
