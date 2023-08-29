@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -26,10 +27,10 @@ public class UsersController : ControllerBase
 
     //private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager, SignInManager<User> signInManager, JwtConfiguration jwtConfiguration)
+    public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration)
     {
         _userManager = userManager;
-        _jwtConfiguration = jwtConfiguration;
+        _jwtConfiguration = jwtConfiguration.Value;
         _signInManager = signInManager;
     }
 
