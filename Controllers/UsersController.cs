@@ -93,7 +93,7 @@ public class UsersController : ControllerBase
                 return Accepted(new { Token = tokenToReturn });
             }
         }
-        return Unauthorized($"User {userToLoginResult.Email} is not authorized.");
+        return Unauthorized($"User {userToLogin.Email} is not authorized.");
     }
 
     //TODO: fix logout
