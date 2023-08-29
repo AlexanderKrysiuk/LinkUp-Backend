@@ -96,7 +96,7 @@ public class UsersController : ControllerBase
         return Unauthorized($"User {userToLoginResult.Email} is not authorized.");
     }
 
-
+    //TODO: fix logout
     [HttpOptions("logout")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
