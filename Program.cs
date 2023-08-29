@@ -19,7 +19,8 @@ builder.Services.AddCors(options =>
         policyBuilder
             .WithOrigins("https://localhost:5173", "http://localhost:5173")
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -46,6 +47,7 @@ builder.Services.AddIdentity<User, Role>(options =>
 builder.Services.AddOptions<JwtConfiguration>().Bind(builder.Configuration.GetSection(JwtConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
 builder.Services.AddAuthentication()
         .AddJwtBearer(options =>
         {

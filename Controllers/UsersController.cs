@@ -27,7 +27,7 @@ public class UsersController : ControllerBase
 
     //private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration)
+    public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration)
     {
         _userManager = userManager;
         _jwtConfiguration = jwtConfiguration.Value;
