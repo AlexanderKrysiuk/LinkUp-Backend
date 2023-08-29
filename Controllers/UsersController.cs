@@ -1,4 +1,4 @@
-﻿//using LinkUpBackend.Configurations;
+﻿using LinkUpBackend.Configurations;
 using LinkUpBackend.Domain;
 using LinkUpBackend.DTOs;
 using Microsoft.AspNetCore.Authentication;
@@ -21,7 +21,7 @@ public class UsersController : ControllerBase
 
     private readonly UserManager<User> _userManager;
 
-    //private readonly JwtConfiguration _jwtConfiguration;
+    private readonly JwtConfiguration _jwtConfiguration;
 
     private readonly SignInManager<User> _signInManager;
 
@@ -80,18 +80,17 @@ public class UsersController : ControllerBase
 
             if (signInResult.Succeeded)
             {
-                //var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email!) };
+                var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email!) };
 
                 var role = await _userManager.GetRolesAsync(userToLoginResult);
 
-                //var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.SigningKey)), SecurityAlgorithms.HmacSha256);
+                var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.SigningKey)), SecurityAlgorithms.HmacSha256);
 
-                //var jwtObject = new JwtSecurityToken(issuer: _jwtConfiguration.Issuer, audience: _jwtConfiguration.Audience, claims: claims, expires: DateTime.Now.AddDays(1), signingCredentials: signingCredentials);
+                var jwtObject = new JwtSecurityToken(issuer: _jwtConfiguration.Issuer, audience: _jwtConfiguration.Audience, claims: claims, expires: DateTime.Now.AddDays(1), signingCredentials: signingCredentials);
 
-                //var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtObject);
+                var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtObject);
 
-                //return Accepted(new { Token = tokenToReturn });
-                return Ok();
+                return Accepted(new { Token = tokenToReturn });
             }
         }
         return Unauthorized($"User {userToLoginResult.Email} is not authorized.");
