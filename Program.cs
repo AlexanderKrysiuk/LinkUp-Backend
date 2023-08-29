@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")).LogTo(Console.WriteLine, LogLevel.Information).EnableSensitiveDataLogging());
+builder.Services.AddDbContext<MeetingsAPIDbContext>(options => options.UseInMemoryDatabase("Meetings Db"));
 
 builder.Services.AddIdentity<User, Role>(options =>
                     {
