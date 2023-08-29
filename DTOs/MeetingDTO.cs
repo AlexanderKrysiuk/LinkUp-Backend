@@ -1,6 +1,6 @@
 namespace LinkUpBackend.DTOs;
 
-public class Meeting{
+public class MeetingDTO{
     public Guid Id {get;set;}
     public DateTime DateTime {get;set;}
 }
