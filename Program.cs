@@ -12,6 +12,17 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policyBuilder =>
+    {
+        policyBuilder
+            .WithOrigins("https://localhost:5173", "http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")).LogTo(Console.WriteLine, LogLevel.Information).EnableSensitiveDataLogging());
@@ -57,7 +68,7 @@ builder.Services.AddAuthorization(options =>
     var defualtAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
         JwtBearerDefaults.AuthenticationScheme);
     defualtAuthorizationPolicyBuilder.RequireAuthenticatedUser();
-    
+
     options.DefaultPolicy = defualtAuthorizationPolicyBuilder.Build();
 
     //add policies
@@ -68,6 +79,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

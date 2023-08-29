@@ -34,7 +34,7 @@ public class UsersController : ControllerBase
     }
 
 
-    [HttpOptions("sign-up")]
+    [HttpOptions("register")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -64,7 +64,7 @@ public class UsersController : ControllerBase
     }
 
 
-    [HttpOptions("sign-in")]
+    [HttpOptions("login")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -92,11 +92,11 @@ public class UsersController : ControllerBase
                 return Accepted(new { Token = tokenToReturn });
             }
         }
-        return Unauthorized(userToLoginResult);
+        return Unauthorized($"User {userToLoginResult.Email} is not authorized.");
     }
 
 
-    [HttpOptions("sign-out")]
+    [HttpOptions("logout")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
