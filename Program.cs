@@ -42,8 +42,7 @@ builder.Services.AddIdentity<User, Role>(options =>
 
                     }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
-//TODO: fix as gives error :<
-/*
+
 builder.Services.AddOptions<JwtConfiguration>().Bind(builder.Configuration.GetSection(JwtConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
