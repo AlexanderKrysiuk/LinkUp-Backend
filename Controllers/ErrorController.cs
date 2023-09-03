@@ -2,7 +2,7 @@
 
 namespace LinkUpBackend.Controllers
 {
-    public class ErrorController : ControllerBase
+    public class ErrorController : ApiController
     {
         [HttpGet("/error")]
         public IActionResult Error()

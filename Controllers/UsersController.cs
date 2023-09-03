@@ -16,7 +16,7 @@ namespace LinkUpBackend.Controllers;
 [ApiController]
 [Route("api")]
 [Authorize]
-public class UsersController : ControllerBase
+public class UsersController : ApiController
 {
 
     private readonly UserManager<User> _userManager;
