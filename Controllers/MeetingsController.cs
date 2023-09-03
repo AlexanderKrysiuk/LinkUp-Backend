@@ -41,4 +41,21 @@ public class MeetingsController : Controller{
         
         return Ok();
     }
+
+    [HttpPut]
+    [Route("{id:guid}")]
+    public async Task<IActionResult> UpdateMeeting ([FromRoute] Guid id, UpdateMeetingRequestDTO request){
+        var meeting = await dbContext.Meetings.FindAsync(id);
+        if(meeting != null){
+            meeting.DateTime = request.DateTime;
+            meeting.MaxParticipant = request.MaxParticipant;
+            meeting.Duration = request.Duration;
+            meeting.Description = request.Description;
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(meeting);
+        }
+        return NotFound();
+    }
 } 
