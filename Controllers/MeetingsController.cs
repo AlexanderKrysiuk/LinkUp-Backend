@@ -21,7 +21,15 @@ public class MeetingsController : Controller{
     public async Task<IActionResult> GetMeetings(){
         return Ok(await dbContext.Meetings.ToListAsync());
     }
-    
+    [HttpGet]
+    [Route("{id:guid}")]
+    public async Task<IActionResult> GetMeeting([FromRoute] Guid id){
+        var meeting = await dbContext.Meetings.FindAsync(id);
+        if (meeting == null){
+            return NotFound();
+        }
+        return Ok(meeting);
+    }
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
         var meeting = new Meeting{
@@ -41,7 +49,6 @@ public class MeetingsController : Controller{
         
         return Ok();
     }
-
     [HttpPut]
     [Route("{id:guid}")]
     public async Task<IActionResult> UpdateMeeting ([FromRoute] Guid id, UpdateMeetingRequestDTO request){
@@ -54,6 +61,18 @@ public class MeetingsController : Controller{
 
             await dbContext.SaveChangesAsync();
 
+            return Ok(meeting);
+        }
+        return NotFound();
+    }
+    [HttpDelete]
+    [Route("{id:guid}")]
+    public async Task<IActionResult> DeleteMeeting([FromRoute] Guid id){
+        var meeting =await dbContext.Meetings.FindAsync(id);
+        if (meeting != null)
+        {
+            dbContext.Remove(meeting);
+            await dbContext.SaveChangesAsync();
             return Ok(meeting);
         }
         return NotFound();
