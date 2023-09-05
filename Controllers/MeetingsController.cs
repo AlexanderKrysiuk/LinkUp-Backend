@@ -35,7 +35,7 @@ public class MeetingsController : Controller{
         var meeting = new Meeting{
             Id = Guid.NewGuid(),
             DateTime = request.DateTime,
-            MaxParticipant = request.MaxParticipant,
+            MaxParticipants = request.MaxParticipants,
             Duration = request.Duration,
             Description = request.Description
         };
@@ -55,7 +55,7 @@ public class MeetingsController : Controller{
         var meeting = await dbContext.Meetings.FindAsync(id);
         if(meeting != null){
             meeting.DateTime = request.DateTime;
-            meeting.MaxParticipant = request.MaxParticipant;
+            meeting.MaxParticipants = request.MaxParticipants;
             meeting.Duration = request.Duration;
             meeting.Description = request.Description;
 
