@@ -132,36 +132,32 @@ public class UsersController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("user")]
+    [HttpGet("user-role")]
     public async Task<IActionResult> GetLoggedInUser(){
-        /*
-        // Pobierz zalogowanego użytkownika na podstawie kontekstu uwierzytelniania
-        var user = await _userManager.GetUserIdAsync(User.Id);
-        if (user != null){
-            // Użytkownik zalogowany
-            // Możesz zwrócić cały obiekt użytkownika lub jego właściwości
-            return Ok(user);
-        }else{
-            // Użytkownik nie jest zalogowany (nie znaleziono użytkownika w kontekście uwierzytelniania)
-            // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
-            return Unauthorized("Użytkownik nie jest zalogowany.");
-        }
-        */
         // Pobierz identyfikator użytkownika z kontekstu uwierzytelniania
-    var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    if (!string.IsNullOrEmpty(userId))
-    {
-        // Użytkownik zalogowany
-        // Zwróć identyfikator użytkownika
-        return Ok(new { UserId = userId });
-    }
-    else
-    {
+        if (!string.IsNullOrEmpty(userEmail)){
+            // Użytkownik zalogowany
+            // Zwróć identyfikator użytkownika
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            var userRole = await _userManager.GetRolesAsync(user);
+            switch(userRole){
+                case { } when userRole.Contains("Admin"):
+                    return Ok("Admin");
+                case { } when userRole.Contains("Contractor"):
+                    return Ok("Contractor");
+                case { } when userRole.Contains("Client"):
+                    return Ok("Client");
+                default:
+                    return NotFound();
+            }
+            return Ok(userRole);
+        }else{
         // Użytkownik nie jest zalogowany (brak identyfikatora użytkownika w kontekście uwierzytelniania)
         // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
         return Unauthorized("Użytkownik nie jest zalogowany.");
-    }
+        }
     }   
 }
 
