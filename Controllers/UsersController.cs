@@ -76,10 +76,10 @@ public class UsersController : ControllerBase
 
         if (userToLoginResult != null && await _userManager.CheckPasswordAsync(userToLoginResult, userToLogin.Password))
         {
-            var signInResult = await _signInManager.PasswordSignInAsync(userToLoginResult, userToLogin.Password, false, false);
+            //var signInResult = await _signInManager.PasswordSignInAsync(userToLoginResult, userToLogin.Password, false, false);
 
-            if (signInResult.Succeeded)
-            {
+            //if (signInResult.Succeeded)
+            //{
                 var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email!) };
 
                 var role = await _userManager.GetRolesAsync(userToLoginResult);
@@ -91,7 +91,7 @@ public class UsersController : ControllerBase
                 var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtObject);
 
                 return Accepted(new { Token = tokenToReturn });
-            }
+            //}
         }
         return Unauthorized($"User {userToLogin.Email} is not authorized.");
     }
@@ -107,7 +107,7 @@ public class UsersController : ControllerBase
         return Accepted();
     }
 
-    [HttpOptions("access-denied")]
+    [HttpGet("access-denied")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
     public IActionResult AccessDenied()
