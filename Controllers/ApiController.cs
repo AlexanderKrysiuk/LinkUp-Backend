@@ -15,7 +15,7 @@ namespace LinkUpBackend.Controllers
                 {
                     modelStateDictionary.AddModelError(error.Code, error.Description);
                 }
-                return ValidationProblem();
+                return ValidationProblem(modelStateDictionary);
             }
             if (errors.Any(e => e.Type == ErrorType.Unexpected))
             {

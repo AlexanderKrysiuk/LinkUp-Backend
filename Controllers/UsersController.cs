@@ -1,6 +1,7 @@
 ﻿using LinkUpBackend.Configurations;
 using LinkUpBackend.Domain;
 using LinkUpBackend.DTOs;
+using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -18,7 +20,7 @@ namespace LinkUpBackend.Controllers;
 [Authorize]
 public class UsersController : ApiController
 {
-
+    
     private readonly UserManager<User> _userManager;
 
     private readonly JwtConfiguration _jwtConfiguration;
@@ -43,22 +45,49 @@ public class UsersController : ApiController
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RegisterAsync([FromBody] UserToRegisterDTO userToRegister)
     {
-        var user = new User();
-        user.UserName = userToRegister.Username;
-        user.Email = userToRegister.Email;
-               
-        var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
-
-        if(!userRegistrationResult.Succeeded)
+        var errorOrUser = Domain.User.Create(userToRegister);
+        if (errorOrUser.IsError)
         {
-            throw new Exception(); //TODO: error handling
+            return Problem(errorOrUser.Errors);
         }
-
-        var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
-
-        if(!userToRoleResult.Succeeded)
+        var user = errorOrUser.Value;
+        bool hasUserBeenCreated = false;
+        List<ErrorOr.Error> errors = new();
+        try
         {
-            throw new Exception(); //TODO: error handling
+            var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
+
+            if (!userRegistrationResult.Succeeded)
+            {
+                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userRegistrationResult.Errors));
+                return Problem(errors);
+            }
+            hasUserBeenCreated = true;
+            var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
+
+            if (!userToRoleResult.Succeeded)
+            {
+                var userDeletionResult = await _userManager.DeleteAsync(user);
+                if (!userDeletionResult.Succeeded)
+                {
+                    // TODO: Log cleaning user error here
+                }
+                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userToRoleResult.Errors));
+                return Problem(errors);
+            }
+        }
+        catch (Exception e)
+        {
+            if (hasUserBeenCreated)
+            {
+                var userDeletionResult = await _userManager.DeleteAsync(user);
+                if (!userDeletionResult.Succeeded)
+                {
+                    // TODO: Log cleaning user error here
+                }
+            }
+            errors.Add(ErrorOr.Error.Failure(description:e.Message));
+            return Problem(errors);
         }
 
         return Accepted($"User {user.UserName} has been registered.");
@@ -93,7 +122,7 @@ public class UsersController : ApiController
                 return Accepted(new { Token = tokenToReturn });
             }
         }
-        return Unauthorized($"User {userToLoginResult.Email} is not authorized.");
+        return Unauthorized($"User {userToLogin.Email} is not authorized.");
     }
 
     //TODO: fix logout
