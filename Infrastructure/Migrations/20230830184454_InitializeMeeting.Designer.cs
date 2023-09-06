@@ -3,6 +3,7 @@ using System;
 using LinkUpBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LinkUpBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230830184454_InitializeMeeting")]
+    partial class InitializeMeeting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,19 +53,19 @@ namespace LinkUpBackend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "5b39b385-7a0a-44bd-a7b5-1c7e85a0a76c",
+                            Id = "3a259dae-321a-4ca3-93f8-8def38c0bfcf",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         },
                         new
                         {
-                            Id = "5521aae1-42ba-4627-989f-d3f97c39f9b1",
+                            Id = "97ea2e03-25a8-467f-bb31-20165f8a4eff",
                             Name = "Contractor",
                             NormalizedName = "CONTRACTOR"
                         },
                         new
                         {
-                            Id = "de07ed46-4bc0-46eb-98d9-63b5250e0725",
+                            Id = "6f07bef7-bee9-4526-ac9e-bc5c027d6c6b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -142,12 +145,13 @@ namespace LinkUpBackend.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Duration")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MaxParticipants")
+                    b.Property<int>("MaxParticipant")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");

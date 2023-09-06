@@ -1,4 +1,4 @@
-﻿using ErrorOr;
+using ErrorOr;
 using LinkUpBackend.DTOs;
 using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Identity;
