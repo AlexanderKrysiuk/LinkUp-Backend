@@ -4,9 +4,10 @@ using LinkUpBackend.Infrastructure;
 using LinkUpBackend.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-
+using System.Security.Claims;
 
 namespace Meetings.Controllers;
 [ApiController]
@@ -31,9 +32,15 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
+    
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin,Contractor")]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
+        // Searching for users
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+
         var meeting = new Meeting{
             Id = Guid.NewGuid(),
             DateTime = request.DateTime,
@@ -43,7 +50,7 @@ public class MeetingsController : Controller{
         };
         var meetingOrganizator = new MeetingOrganizator{
             MeetingId = meeting.Id,
-            OrganizatorId = request.OrganizatorId.ToString()
+            OrganizatorId = user.Id
         };
         await dbContext.Meetings.AddAsync(meeting);
         await dbContext.MeetingsOrganizators.AddAsync(meetingOrganizator);

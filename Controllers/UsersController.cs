@@ -84,11 +84,14 @@ public class UsersController : ControllerBase
             var issuer = _configuration["Authentication:Jwt:Issuer"];
             var audience = _configuration["Authentication:Jwt:Audience"];
             var signingKey = _configuration["Authentication:Jwt:SigningKey"];
-            
+
+            // Pobierz role użytkownika
+            var role = await _userManager.GetRolesAsync(userToLoginResult);
             var claims = new[]{ 
                 new Claim(JwtRegisteredClaimNames.Sub, userToLoginResult.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userToLoginResult.Id)
+                new Claim(ClaimTypes.NameIdentifier, userToLoginResult.Id),
+                new Claim(ClaimTypes.Role, role[0])
             };
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
