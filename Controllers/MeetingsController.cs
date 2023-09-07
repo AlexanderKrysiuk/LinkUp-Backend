@@ -3,6 +3,7 @@ using LinkUpBackend.Models;
 using LinkUpBackend.Infrastructure;
 using LinkUpBackend.Domain;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
@@ -30,6 +31,7 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
+    [Authorize(Roles = "Admin,Contractor")]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
         var meeting = new Meeting{
