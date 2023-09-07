@@ -40,21 +40,26 @@ public class MeetingsController : Controller{
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail);
 
-        var meeting = new Meeting{
-            Id = Guid.NewGuid(),
-            DateTime = request.DateTime,
-            MaxParticipants = request.MaxParticipants,
-            Duration = request.Duration,
-            Description = request.Description
-        };
-        var meetingOrganizator = new MeetingOrganizator{
-            MeetingId = meeting.Id,
-            OrganizatorId = user.Id
-        };
-        await dbContext.Meetings.AddAsync(meeting);
-        await dbContext.MeetingsOrganizators.AddAsync(meetingOrganizator);
-        await dbContext.SaveChangesAsync();
-        
+        if (DateTime.TryParse(request.DateTime, out DateTime dateTime)) {
+            var meeting = new Meeting
+            {
+                Id = Guid.NewGuid(),
+                DateTime = dateTime.ToUniversalTime(),
+                MaxParticipants = request.MaxParticipants,
+                Duration = request.Duration,
+                Description = request.Description
+            };
+            var meetingOrganizator = new MeetingOrganizator
+            {
+                MeetingId = meeting.Id,
+                OrganizatorId = user.Id
+            };
+            await dbContext.Meetings.AddAsync(meeting);
+            await dbContext.MeetingsOrganizators.AddAsync(meetingOrganizator);
+            await dbContext.SaveChangesAsync();
+
+        }
+
         return Ok();
     }
     [HttpPut]
