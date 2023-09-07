@@ -1,5 +1,5 @@
 ﻿using LinkUpBackend.Configurations;
-using LinkUpBackend.Domain;
+using LinkUpBackend.Models;
 using LinkUpBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

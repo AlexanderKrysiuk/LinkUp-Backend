@@ -1,4 +1,3 @@
-using LinkUpBackend.Domain;
 namespace LinkUpBackend.Models;
 public class MeetingOrganizator
 {

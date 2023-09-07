@@ -1,5 +1,4 @@
 ﻿using LinkUpBackend.Models;
-using LinkUpBackend.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,7 +1,6 @@
 using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
 using LinkUpBackend.Infrastructure;
-using LinkUpBackend.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
