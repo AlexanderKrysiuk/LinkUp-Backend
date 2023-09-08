@@ -85,4 +85,31 @@ public class MeetingsController : Controller{
         }
         return NotFound();
     }
-} 
+    [HttpGet]
+    [Route("organizator/{id:guid}")]
+    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] Guid id){
+        var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var meetings = await dbContext.Meetings
+            .Where(m => organizatorMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(meetings);
+    }
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet]
+    [Route("organizator/my-meetings")]
+    public async Task<IActionResult> GetMyMeetingsAsOrganizator(){
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+        var myMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == user.Id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(m => myMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(myMeetings);
+    }
+}
