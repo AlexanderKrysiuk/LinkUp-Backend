@@ -85,4 +85,16 @@ public class MeetingsController : Controller{
         }
         return NotFound();
     }
-} 
+    [HttpGet]
+    [Route("organizator/{id:guid}")]
+    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] Guid id){
+        var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var meetings = await dbContext.Meetings
+            .Where(m => organizatorMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(meetings);
+    }
+}
