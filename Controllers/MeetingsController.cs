@@ -97,4 +97,19 @@ public class MeetingsController : Controller{
             .ToListAsync();
         return Ok(meetings);
     }
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet]
+    [Route("organizator/my-meetings")]
+    public async Task<IActionResult> GetMyMeetingsAsOrganizator(){
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+        var myMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == user.Id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(m => myMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(myMeetings);
+    }
 }
