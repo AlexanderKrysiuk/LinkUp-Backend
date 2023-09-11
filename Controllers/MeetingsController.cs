@@ -62,6 +62,9 @@ public class MeetingsController : Controller{
 
         return Ok();
     }
+    
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Admin,Contractor")]
     [HttpPut]
     [Route("{id:guid}")]
     public async Task<IActionResult> UpdateMeeting ([FromRoute] Guid id, UpdateMeetingRequestDTO request){
