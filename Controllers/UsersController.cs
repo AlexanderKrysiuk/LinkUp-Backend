@@ -141,7 +141,11 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetAllContractors(){
 
         var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
-        return Ok(contractors);
+        var contractorsInfo = contractors.Select(user => new{
+            UserName = user.UserName,
+            Email = user.Email
+            });
+        return Ok(contractorsInfo);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
