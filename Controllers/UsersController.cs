@@ -161,6 +161,23 @@ public class UsersController : ControllerBase
         // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
         return Unauthorized("Użytkownik nie jest zalogowany.");
         }
-    }   
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("user-details")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetActionResultAsync()
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            UserDetailsDTO userDetails = new UserDetailsDTO { Username = user.UserName, Email = user.Email };
+            return Ok(userDetails);
+        }
+        return Unauthorized("User is not logged.");
+    }
 }
 
