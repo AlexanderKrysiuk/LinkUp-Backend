@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Linq;
+
 
 namespace LinkUpBackend.Controllers;
 
@@ -134,6 +136,14 @@ public class UsersController : ControllerBase
         return Forbid();
     }
 
+    [HttpGet("contractors")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllContractors(){
+
+        var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
+        return Ok(contractors);
+    }
+
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-role")]
     public async Task<IActionResult> GetLoggedInUser(){
@@ -161,6 +171,6 @@ public class UsersController : ControllerBase
         // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
         return Unauthorized("Użytkownik nie jest zalogowany.");
         }
-    }   
+    }
 }
 
