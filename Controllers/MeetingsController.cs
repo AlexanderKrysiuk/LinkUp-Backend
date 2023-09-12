@@ -117,4 +117,32 @@ public class MeetingsController : Controller{
             .ToListAsync();
         return Ok(myMeetings);
     }
+
+    [Authorize]
+    [HttpPost("client/join")]
+    public async Task<IActionResult> JoinMeeting([FromBody] Guid id)
+    {
+        return Problem(statusCode: 405);
+    }
+
+    [Authorize]
+    [HttpPost("client/leave")]
+    public async Task<IActionResult> LeaveMeeting([FromBody] Guid id)
+    {
+        return Problem(statusCode: 405);
+    }
+
+    [Authorize]
+    [HttpPost("client/reschedule")]
+    public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
+    {
+        return Problem(statusCode: 405);
+    }
+
+    [Authorize]
+    [HttpGet("client/my-meetings")]
+    public async Task<IActionResult> GetMeetingsAsClient()
+    {
+        return Problem(statusCode: 405);
+    }
 }
