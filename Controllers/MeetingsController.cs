@@ -122,7 +122,39 @@ public class MeetingsController : Controller{
     [HttpPost("client/join")]
     public async Task<IActionResult> JoinMeeting([FromBody] Guid id)
     {
-        return Problem(statusCode: 405);
+
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail!);
+        var meeting = await dbContext.Meetings.FindAsync(id);
+        if (meeting == null)
+        {
+            return NotFound("No such meeting");
+        }
+        var organizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
+        if (organizators.Contains(user!.Id))
+        {
+            return BadRequest("Tried to join owned meeting");
+        }
+        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
+        if (currentParticipants.Contains(user.Id))
+        {
+            return BadRequest("User already in the meeting");
+        }
+        if (currentParticipants.Count == meeting.MaxParticipants)
+        {
+            return BadRequest("Meeting already full");
+        }
+        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { MeetingId = meeting.Id, ParticipantId = user.Id, Participant = user, Meeting = meeting });
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+        }
+
+        return Ok();
     }
 
     [Authorize]
