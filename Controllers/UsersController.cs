@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Linq;
+
 
 namespace LinkUpBackend.Controllers;
 
@@ -132,6 +134,18 @@ public class UsersController : ControllerBase
     public IActionResult AccessDenied()
     {
         return Forbid();
+    }
+
+    [HttpGet("contractors")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllContractors(){
+
+        var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
+        var contractorsInfo = contractors.Select(user => new{
+            UserName = user.UserName,
+            Email = user.Email
+            });
+        return Ok(contractorsInfo);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
