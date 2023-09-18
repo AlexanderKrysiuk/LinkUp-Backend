@@ -8,6 +8,7 @@ namespace LinkUpBackend.Infrastructure
     {
         public override DbSet<Role> Roles => Set<Role>();
         public DbSet<Meeting> Meetings {get;set;}
+        public DbSet<Meeting> ArchivedMeetings { get; set; }
         public DbSet<MeetingOrganizator> MeetingsOrganizators {get;set;}
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
@@ -46,8 +47,5 @@ namespace LinkUpBackend.Infrastructure
                 .WithMany()
                 .HasForeignKey(x => x.MeetingId);
         }
-    // protected override void OnModelCreating(ModelBuilder modelBuilder){
-    // modelBuilder.Entity<MeetingOrganisatorDTO>().HasNoKey();
-    // }
     }
 }
