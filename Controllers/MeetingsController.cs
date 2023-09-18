@@ -118,4 +118,21 @@ public class MeetingsController : Controller{
             .ToListAsync();
         return Ok(myMeetings);
     }
+
+    public void ArchiveMeetings()
+    {
+        DateTime currentDate = DateTime.Now;
+
+        var meetingsToArchive = dbContext.Meetings
+            .Where(m => m.DateTime.AddMinutes(m.Duration) < currentDate)
+            .ToList();
+
+        foreach (var meeting in meetingsToArchive)
+        {
+            dbContext.ArchivedMeetings.Add(meeting);
+            dbContext.Meetings.Remove(meeting);
+        }
+
+        dbContext.SaveChanges();
+    }
 }
