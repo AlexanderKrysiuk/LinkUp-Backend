@@ -1,6 +1,6 @@
 ﻿using LinkUpBackend.Configurations;
-using LinkUpBackend.Domain;
 using LinkUpBackend.DTOs;
+using LinkUpBackend.Models;
 using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -45,7 +45,7 @@ public class UsersController : ApiController
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RegisterAsync([FromBody] UserToRegisterDTO userToRegister)
     {
-        var errorOrUser = Domain.User.Create(userToRegister);
+        var errorOrUser = Models.User.Create(userToRegister);
         if (errorOrUser.IsError)
         {
             return Problem(errorOrUser.Errors);

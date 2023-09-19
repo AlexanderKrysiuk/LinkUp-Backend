@@ -4,7 +4,7 @@ using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Identity;
 using System.Text.RegularExpressions;
 
-namespace LinkUpBackend.Domain
+namespace LinkUpBackend.Models
 {
     public class User : IdentityUser
     {
@@ -27,13 +27,13 @@ namespace LinkUpBackend.Domain
             {
                 return errors;
             }
-            return new User() { Email=userToRegister.Email, UserName=userToRegister.Username};
+            return new User() { Email = userToRegister.Email, UserName = userToRegister.Username };
 
         }
 
         static bool IsTwoPartName(string name)
         {
-            return name.Count(a=>a==' ')==1;
+            return name.Count(a => a == ' ') == 1;
         }
 
         static bool isPasswordValid(string password)

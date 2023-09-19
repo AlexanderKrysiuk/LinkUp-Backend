@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace LinkUpBackend.Domain
+namespace LinkUpBackend.Models
 {
     public class Role : IdentityRole
     {
