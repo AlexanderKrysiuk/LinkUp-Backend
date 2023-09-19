@@ -119,8 +119,8 @@ public class MeetingsController : Controller{
     }
 
     [Authorize]
-    [HttpPost("client/join")]
-    public async Task<IActionResult> JoinMeeting([FromBody] Guid id)
+    [HttpPost("{id:guid}/join")]
+    public async Task<IActionResult> JoinMeeting([FromRoute] Guid id)
     {
 
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -158,23 +158,108 @@ public class MeetingsController : Controller{
     }
 
     [Authorize]
-    [HttpPost("client/leave")]
-    public async Task<IActionResult> LeaveMeeting([FromBody] Guid id)
+    [HttpPost("{id:guid}/leave")]
+    public async Task<IActionResult> LeaveMeeting([FromRoute] Guid id)
     {
-        return Problem(statusCode: 405);
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail!);
+        var meeting = await dbContext.Meetings.FindAsync(id);
+        if (meeting == null)
+        {
+            return NotFound("No such meeting");
+        }
+        var userRegisteredParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == meeting.Id && x.ParticipantId == user!.Id);
+        if (userRegisteredParticipation is null)
+        {
+            return BadRequest("This user is not participating in selected meeting");
+        }
+        dbContext.MeetingsParticipants.Remove(userRegisteredParticipation);
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+        }
+        return Ok();
     }
 
     [Authorize]
-    [HttpPost("client/reschedule")]
+    [HttpPost("reschedule")]
     public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
     {
-        return Problem(statusCode: 405);
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail!);
+        var oldMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.OldMeetingId);
+        var newMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.NewMeetingId);
+        if (oldMeeting is null)
+        {
+            return NotFound("Tried to reschedule from non existant meeting");
+        }
+        if (newMeeting is null)
+        {
+            return NotFound("Tried to reschedule to non existant meeting");
+        }
+        var userRegisteredOldParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == oldMeeting.Id && x.ParticipantId == user!.Id);
+        if (userRegisteredOldParticipation is null)
+        {
+            return BadRequest("Tried to reschedule from a meeting that the user is not participating in");
+        }
+        var newMeetingOrganizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
+        if (newMeetingOrganizators.Contains(user!.Id))
+        {
+            return BadRequest("Tried to reschedule to owned meeting");
+        }
+        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
+        if (currentParticipants.Contains(user.Id))
+        {
+            return BadRequest("Tried to reschedule to a meeting that user is already participating in");
+        }
+        if (currentParticipants.Count == newMeeting.MaxParticipants)
+        {
+            return BadRequest("Tried to reschedule to an already full meeting");
+        }
+        dbContext.MeetingsParticipants.Remove(userRegisteredOldParticipation);
+        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { Meeting = newMeeting, MeetingId = newMeeting.Id, Participant = user, ParticipantId = user.Id });
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+        }
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("client/{id:guid}")]
+    public async Task<IActionResult> GetMeetingsByParticipant([FromRoute] Guid id)
+    {
+        var organizatorMeetingsIds = await dbContext.MeetingsParticipants
+            .Where(x => x.ParticipantId == id.ToString())
+            .Select(x => x.MeetingId)
+            .ToListAsync();
+        var meetings = await dbContext.Meetings
+            .Where(m => organizatorMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(meetings);
     }
 
     [Authorize]
     [HttpGet("client/my-meetings")]
     public async Task<IActionResult> GetMeetingsAsClient()
     {
-        return Problem(statusCode: 405);
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail!);
+        var userMeetingsIds = await dbContext.MeetingsParticipants
+            .Where(x => x.ParticipantId== user!.Id)
+            .Select(x => x.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(meeting => userMeetingsIds.Contains(meeting.Id))
+            .ToListAsync();
+        return Ok(myMeetings);
     }
 }
