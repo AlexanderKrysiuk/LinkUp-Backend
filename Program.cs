@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policyBuilder =>
     {
         policyBuilder
-            .WithOrigins("https://localhost:5174", "http://localhost:5174") //TODO: check if it's 5173 or 5174!
+            .WithOrigins("https://localhost:5173", "http://localhost:5173") //TODO: check if it's 5173 or 5174!
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();

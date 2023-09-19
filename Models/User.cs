@@ -4,6 +4,7 @@ using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Identity;
 using System.Text.RegularExpressions;
 
+
 namespace LinkUpBackend.Models
 {
     public class User : IdentityUser

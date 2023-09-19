@@ -2,9 +2,11 @@ using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
 using LinkUpBackend.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-
+using System.Security.Claims;
 
 namespace Meetings.Controllers;
 [ApiController]
@@ -29,23 +31,36 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
+    
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(Roles = "Admin,Contractor")]
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
-        var meeting = new Meeting{
-            Id = Guid.NewGuid(),
-            DateTime = request.DateTime,
-            MaxParticipants = request.MaxParticipants,
-            Duration = request.Duration,
-            Description = request.Description
-        };
-        var meetingOrganizator = new MeetingOrganizator{
-            MeetingId = meeting.Id,
-            OrganizatorId = request.OrganizatorId.ToString()
-        };
-        await dbContext.Meetings.AddAsync(meeting);
-        await dbContext.MeetingsOrganizators.AddAsync(meetingOrganizator);
-        await dbContext.SaveChangesAsync();
-        
+        // Searching for users
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+
+        if (DateTime.TryParse(request.DateTime, out DateTime dateTime)) {
+            var meeting = new Meeting
+            {
+                Id = Guid.NewGuid(),
+                DateTime = dateTime.ToUniversalTime(),
+                MaxParticipants = request.MaxParticipants,
+                Duration = request.Duration,
+                Description = request.Description
+            };
+            var meetingOrganizator = new MeetingOrganizator
+            {
+                MeetingId = meeting.Id,
+                OrganizatorId = user.Id
+            };
+            await dbContext.Meetings.AddAsync(meeting);
+            await dbContext.MeetingsOrganizators.AddAsync(meetingOrganizator);
+            await dbContext.SaveChangesAsync();
+
+        }
+
         return Ok();
     }
     [HttpPut]
@@ -76,4 +91,31 @@ public class MeetingsController : Controller{
         }
         return NotFound();
     }
-} 
+    [HttpGet]
+    [Route("organizator/{id:guid}")]
+    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] Guid id){
+        var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var meetings = await dbContext.Meetings
+            .Where(m => organizatorMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(meetings);
+    }
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet]
+    [Route("organizator/my-meetings")]
+    public async Task<IActionResult> GetMyMeetingsAsOrganizator(){
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+        var myMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == user.Id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(m => myMeetingsIds.Contains(m.Id))
+            .ToListAsync();
+        return Ok(myMeetings);
+    }
+}

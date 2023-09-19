@@ -3,15 +3,19 @@ using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
 using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Linq;
+
 
 namespace LinkUpBackend.Controllers;
 
@@ -27,13 +31,16 @@ public class UsersController : ApiController
 
     private readonly SignInManager<User> _signInManager;
 
+    private readonly IConfiguration _configuration;
+
     //private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration)
+    public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration, IConfiguration configuration)
     {
         _userManager = userManager;
         _jwtConfiguration = jwtConfiguration.Value;
-        _signInManager = signInManager;
+        _signInManager = signInManager; 
+       _configuration = configuration;
     }
 
 
@@ -105,24 +112,38 @@ public class UsersController : ApiController
 
         if (userToLoginResult != null && await _userManager.CheckPasswordAsync(userToLoginResult, userToLogin.Password))
         {
-            //var signInResult = await _signInManager.PasswordSignInAsync(userToLoginResult, userToLogin.Password, false, false);
+            var issuer = _configuration["Authentication:Jwt:Issuer"];
+            var audience = _configuration["Authentication:Jwt:Audience"];
+            var signingKey = _configuration["Authentication:Jwt:SigningKey"];
 
-            //if (signInResult.Succeeded)
-            //{
-                var claims = new List<Claim> { new Claim(ClaimTypes.Email, userToLoginResult.Email!) };
+            // Pobierz role użytkownika
+            var role = await _userManager.GetRolesAsync(userToLoginResult);
+            var claims = new[]{ 
+                new Claim(JwtRegisteredClaimNames.Sub, userToLoginResult.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, userToLoginResult.Id),
+                new Claim(ClaimTypes.Role, role[0])
+            };
+            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var role = await _userManager.GetRolesAsync(userToLoginResult);
-
-                var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.SigningKey)), SecurityAlgorithms.HmacSha256);
-
-                var jwtObject = new JwtSecurityToken(issuer: _jwtConfiguration.Issuer, audience: _jwtConfiguration.Audience, claims: claims, expires: DateTime.Now.AddDays(1), signingCredentials: signingCredentials);
-
-                var tokenToReturn = new JwtSecurityTokenHandler().WriteToken(jwtObject);
-
-                return Accepted(new { Token = tokenToReturn });
-            //}
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: DateTime.Now.AddDays(1), // Ustal czas wygaśnięcia tokenu
+                signingCredentials: creds
+            );
+            var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+            await _userManager.SetAuthenticationTokenAsync(userToLoginResult, "MyAuthScheme", "JwtToken", tokenValue);
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
+            });
         }
-        return Unauthorized($"User {userToLogin.Email} is not authorized.");
+        return Unauthorized();
     }
 
     //TODO: fix logout
@@ -144,5 +165,62 @@ public class UsersController : ApiController
         return Forbid();
     }
 
+    [HttpGet("contractors")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllContractors(){
+
+        var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
+        var contractorsInfo = contractors.Select(user => new{
+            UserName = user.UserName,
+            Email = user.Email
+            });
+        return Ok(contractorsInfo);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("user-role")]
+    public async Task<IActionResult> GetLoggedInUser(){
+        // Pobierz identyfikator użytkownika z kontekstu uwierzytelniania
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userEmail)){
+            // Użytkownik zalogowany
+            // Zwróć identyfikator użytkownika
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            var userRole = await _userManager.GetRolesAsync(user);
+            switch(userRole){
+                case { } when userRole.Contains("Admin"):
+                    return Ok("Admin");
+                case { } when userRole.Contains("Contractor"):
+                    return Ok("Contractor");
+                case { } when userRole.Contains("Client"):
+                    return Ok("Client");
+                default:
+                    return NotFound();
+            }
+            return Ok(userRole);
+        }else{
+        // Użytkownik nie jest zalogowany (brak identyfikatora użytkownika w kontekście uwierzytelniania)
+        // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
+        return Unauthorized("Użytkownik nie jest zalogowany.");
+        }
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("user-details")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetActionResultAsync()
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            UserDetailsDTO userDetails = new UserDetailsDTO { Username = user.UserName, Email = user.Email };
+            return Ok(userDetails);
+        }
+        return Unauthorized("User is not logged.");
+    }
 }
 
