@@ -92,10 +92,11 @@ public class MeetingsController : Controller{
         return NotFound();
     }
     [HttpGet]
-    [Route("organizator/{id:guid}")]
-    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] Guid id){
+    [Route("organizator/{email}")]
+    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] string email){
+        var contractor = await userManager.FindByEmailAsync(email);
         var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
-            .Where(mo => mo.OrganizatorId == id.ToString())
+            .Where(mo => mo.OrganizatorId == contractor.Id.ToString())
             .Select(mo => mo.MeetingId)
             .ToListAsync();
         var meetings = await dbContext.Meetings
