@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,6 +105,18 @@ builder.Services.AddSwaggerGen(c =>
         { securityScheme, new string[] { } }
     });
 });
+
+// Add the required Quartz.NET services
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    var jobKey = new JobKey("ArchiveMeetings");
+    q.AddJob<ArchiveMeetingsJob>(options => options.WithIdentity(jobKey));
+    q.AddTrigger(options => options.ForJob(jobKey).WithIdentity("ArchiveMeetings-trigger").WithCronSchedule("0 * * * * ?"));
+});
+
+// Add the Quartz.NET hosted service
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 
