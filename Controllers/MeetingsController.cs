@@ -32,8 +32,8 @@ public class MeetingsController : Controller{
         return Ok(meeting);
     }
     
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    //[Authorize(Roles = "Admin,Contractor")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Admin,Contractor")]
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
@@ -117,22 +117,5 @@ public class MeetingsController : Controller{
             .Where(m => myMeetingsIds.Contains(m.Id))
             .ToListAsync();
         return Ok(myMeetings);
-    }
-
-    public void ArchiveMeetings()
-    {
-        DateTime currentDate = DateTime.Now;
-
-        var meetingsToArchive = dbContext.Meetings
-            .Where(m => m.DateTime.AddMinutes(m.Duration) < currentDate)
-            .ToList();
-
-        foreach (var meeting in meetingsToArchive)
-        {
-            dbContext.ArchivedMeetings.Add(meeting);
-            dbContext.Meetings.Remove(meeting);
-        }
-
-        dbContext.SaveChanges();
     }
 }
