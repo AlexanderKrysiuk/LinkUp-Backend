@@ -117,7 +117,6 @@ public class UsersController : ControllerBase
         return Unauthorized();
     }
 
-    //TODO: fix logout
     [HttpOptions("logout")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -193,5 +192,44 @@ public class UsersController : ControllerBase
         }
         return Unauthorized("User is not logged.");
     }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpPost("user-photo")]
+    public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userManager.FindByEmailAsync(userEmail);
+
+        string path = _configuration["AppSettings:LocalStoragePath"]!;
+
+        try
+        {
+            if (profilePicture != null && profilePicture.Length > 0)
+            {
+                if (profilePicture.ContentType != "image/jpeg")
+                {
+                    return BadRequest("Invalid profile picture format. Only JPG/JPEG files are allowed.");
+                }
+
+                var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
+                var filePath = Path.Combine(path, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profilePicture.CopyToAsync(stream);
+                }
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Invalid profile picture format.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An error occurred while processing the picture.");
+        }
+    }
+
 }
 
