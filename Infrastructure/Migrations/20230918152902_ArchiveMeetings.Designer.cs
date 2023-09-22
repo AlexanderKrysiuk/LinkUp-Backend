@@ -3,6 +3,7 @@ using System;
 using LinkUpBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LinkUpBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230918152902_ArchiveMeetings")]
+    partial class ArchiveMeetings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,23 +24,6 @@ namespace LinkUpBackend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("LinkUpBackend.Models.ArchiveMeeting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Archive");
-                });
 
             modelBuilder.Entity("LinkUpBackend.Models.Meeting", b =>
                 {
@@ -59,7 +45,7 @@ namespace LinkUpBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Meetings");
+                    b.ToTable("Meeting");
                 });
 
             modelBuilder.Entity("LinkUpBackend.Models.MeetingOrganizator", b =>
@@ -105,19 +91,19 @@ namespace LinkUpBackend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "0aecf550-53ad-4363-8729-056ea7a2a407",
+                            Id = "c83cb1a6-d79e-4f5c-beb7-18a74d447638",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         },
                         new
                         {
-                            Id = "1285b52d-615e-471c-9418-f340cc7832e4",
+                            Id = "28d64ac4-e685-4cea-93d1-b244ba36929e",
                             Name = "Contractor",
                             NormalizedName = "CONTRACTOR"
                         },
                         new
                         {
-                            Id = "095d7b3b-826c-40dd-b64d-4e5c0916dd76",
+                            Id = "2ed05b49-11ab-414f-ab0d-32300f368346",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

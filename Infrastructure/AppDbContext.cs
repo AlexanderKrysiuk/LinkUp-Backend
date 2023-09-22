@@ -8,6 +8,8 @@ namespace LinkUpBackend.Infrastructure
     {
         public override DbSet<Role> Roles => Set<Role>();
         public DbSet<Meeting> Meetings {get;set;}
+
+        public DbSet<ArchiveMeeting> Archive { get; set; }
         public DbSet<MeetingOrganizator> MeetingsOrganizators {get;set;}
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { }
