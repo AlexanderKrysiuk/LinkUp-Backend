@@ -197,7 +197,7 @@ public class UsersController : ControllerBase
     [HttpPost("user-photo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
