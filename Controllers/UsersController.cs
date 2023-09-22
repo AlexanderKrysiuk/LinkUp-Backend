@@ -197,7 +197,7 @@ public class UsersController : ControllerBase
     [HttpPost("user-photo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(StatusCodes.)]
     public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -206,6 +206,11 @@ public class UsersController : ControllerBase
         string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
         var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
         var filePath = Path.Combine(storagePath, fileName);
+
+        if (System.IO.File.Exists(filePath))
+        {
+            return BadRequest("Picture has been already uploaded.");
+        }
 
         try
         {

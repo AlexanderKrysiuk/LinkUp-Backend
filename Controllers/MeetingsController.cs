@@ -31,9 +31,9 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
-    
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    //[Authorize(Roles = "Admin,Contractor")]
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Admin,Contractor")]
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
