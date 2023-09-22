@@ -195,12 +195,17 @@ public class UsersController : ControllerBase
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost("user-photo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
     public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await _userManager.FindByEmailAsync(userEmail);
 
-        string path = _configuration["AppSettings:LocalStoragePath"]!;
+        string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
+        var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
+        var filePath = Path.Combine(storagePath, fileName);
 
         try
         {
@@ -211,9 +216,6 @@ public class UsersController : ControllerBase
                     return BadRequest("Invalid profile picture format. Only JPG/JPEG files are allowed.");
                 }
 
-                var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
-                var filePath = Path.Combine(path, fileName);
-
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await profilePicture.CopyToAsync(stream);
@@ -222,7 +224,41 @@ public class UsersController : ControllerBase
             }
             else
             {
-                return BadRequest("Invalid profile picture format.");
+                return BadRequest("Invalid profile picture format."); //TODO
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An error occurred while processing the picture."); //TODO
+        }
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("user-photo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProfilePicture()
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userManager.FindByEmailAsync(userEmail);
+
+        string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
+        var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
+        var filePath = Path.Combine(storagePath, fileName);
+
+        try
+        {
+            if (System.IO.File.Exists(filePath))
+            {
+                var mimeType = "image/jpeg";
+                var file = new PhysicalFileResult(filePath, mimeType);
+                file.FileDownloadName = user.UserName!.ToString().Replace(" ", "") + ".jpg";
+
+                return file;
+            }
+            else
+            {
+                return NotFound("File not found.");
             }
         }
         catch (Exception ex)
@@ -230,6 +266,5 @@ public class UsersController : ControllerBase
             return StatusCode(500, "An error occurred while processing the picture.");
         }
     }
-
 }
 
