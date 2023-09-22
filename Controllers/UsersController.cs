@@ -209,7 +209,7 @@ public class UsersController : ControllerBase
 
         if (System.IO.File.Exists(filePath))
         {
-            return BadRequest("Picture has been already uploaded.");
+            System.IO.File.Delete(filePath);
         }
 
         try
@@ -229,7 +229,7 @@ public class UsersController : ControllerBase
             }
             else
             {
-                return BadRequest("Invalid profile picture format."); //TODO
+                return BadRequest("Invalid profile picture."); //TODO
             }
         }
         catch (Exception ex)
