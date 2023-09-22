@@ -11,7 +11,6 @@ namespace LinkUpBackend.Infrastructure
 
         public DbSet<ArchiveMeeting> Archive { get; set; }
         public DbSet<MeetingOrganizator> MeetingsOrganizators {get;set;}
-
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { }
 

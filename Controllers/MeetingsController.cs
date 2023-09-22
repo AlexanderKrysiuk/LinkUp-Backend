@@ -33,7 +33,7 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
-    
+ 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin,Contractor")]
     [AllowAnonymous]
