@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using LinkUpBackend.Migrations;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Meetings.Controllers;
 [ApiController]
@@ -31,9 +33,10 @@ public class MeetingsController : Controller{
         }
         return Ok(meeting);
     }
-    
+ 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin,Contractor")]
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
         // Searching for users
@@ -91,10 +94,11 @@ public class MeetingsController : Controller{
         return NotFound();
     }
     [HttpGet]
-    [Route("organizator/{id:guid}")]
-    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] Guid id){
+    [Route("organizator/{email}")]
+    public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] string email){
+        var contractor = await userManager.FindByEmailAsync(email);
         var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
-            .Where(mo => mo.OrganizatorId == id.ToString())
+            .Where(mo => mo.OrganizatorId == contractor.Id.ToString())
             .Select(mo => mo.MeetingId)
             .ToListAsync();
         var meetings = await dbContext.Meetings
@@ -114,6 +118,7 @@ public class MeetingsController : Controller{
             .ToListAsync();
         var myMeetings = await dbContext.Meetings
             .Where(m => myMeetingsIds.Contains(m.Id))
+            .OrderBy(m => m.DateTime)
             .ToListAsync();
         return Ok(myMeetings);
     }
@@ -261,5 +266,98 @@ public class MeetingsController : Controller{
             .Where(meeting => userMeetingsIds.Contains(meeting.Id))
             .ToListAsync();
         return Ok(myMeetings);
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet]
+    [Route("upcoming")]
+    public async Task<IActionResult> GetUpcomingMeetings() //so far only for admin/contractor
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+        var userRole = await userManager.GetRolesAsync(user);
+
+        //if (userRole.Contains("Client")
+        //{
+        //    var upcomingMeetingsIds = await dbContext.MeetingsParticipants
+        //        .Where(m => m.ParticipantId == user.Id.ToString())
+        //        .Select(m => m.MeetingId)
+        //        .ToListAsync();
+
+        //    var upcomingMeetings = await dbContext.Meetings
+        //        .Where(m => upcomingMeetingsIds.Contains(m.Id))
+        //        .OrderBy(m => m.DateTime)
+        //        .ToListAsync();
+        //}
+        //else
+        //{
+
+        var myMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == user.Id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(m => myMeetingsIds.Contains(m.Id))
+            .OrderBy(m => m.DateTime)
+            .ToListAsync();
+        //}
+        var upcomingMeetings = IsMeetingArchived(myMeetings, false);
+
+        return Ok(upcomingMeetings);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet]
+    [Route("archived")]
+    public async Task<IActionResult> GetArchivedMeetings() //so far only for admin/contractor
+    {
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await userManager.FindByEmailAsync(userEmail);
+        var userRole = await userManager.GetRolesAsync(user);
+
+        //if (userRole.Contains("Client")
+        //{
+        //    var upcomingMeetingsIds = await dbContext.MeetingsParticipants
+        //        .Where(m => m.ParticipantId == user.Id.ToString())
+        //        .Select(m => m.MeetingId)
+        //        .ToListAsync();
+
+        //    var upcomingMeetings = await dbContext.Meetings
+        //        .Where(m => upcomingMeetingsIds.Contains(m.Id))
+        //        .OrderBy(m => m.DateTime)
+        //        .ToListAsync();
+        //}
+        //else
+        //{
+
+        var myMeetingsIds = await dbContext.MeetingsOrganizators
+            .Where(mo => mo.OrganizatorId == user.Id.ToString())
+            .Select(mo => mo.MeetingId)
+            .ToListAsync();
+        var myMeetings = await dbContext.Meetings
+            .Where(m => myMeetingsIds.Contains(m.Id))
+            .OrderBy(m => m.DateTime)
+            .ToListAsync();
+        //}
+        var archivedMeetings = IsMeetingArchived(myMeetings);
+
+        return Ok(archivedMeetings);
+    }
+
+
+    private List<Meeting> IsMeetingArchived(List<Meeting> meetingList, bool archive = true)
+    {
+        List<Meeting> filteredMeetings = new List<Meeting>();
+
+        foreach (var meeting in meetingList)
+        {
+            bool isArchived = archive && meeting.DateTime.AddMinutes(meeting.Duration) < DateTime.Now.ToUniversalTime();
+            bool isUpcoming = !archive && meeting.DateTime.AddMinutes(meeting.Duration) >= DateTime.Now.ToUniversalTime();
+
+            if (isArchived || isUpcoming)
+            {
+                filteredMeetings.Add(meeting);
+            }
+        }
+        return filteredMeetings;
     }
 }
