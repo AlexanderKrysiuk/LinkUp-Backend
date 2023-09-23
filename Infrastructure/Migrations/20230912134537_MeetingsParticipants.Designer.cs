@@ -3,6 +3,7 @@ using System;
 using LinkUpBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,34 +12,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LinkUpBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230912134537_MeetingsParticipants")]
+    partial class MeetingsParticipants
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-
-            modelBuilder.Entity("LinkUpBackend.Models.ArchiveMeeting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Archive");
-                });
 
             modelBuilder.Entity("LinkUpBackend.Models.Meeting", b =>
                 {
@@ -121,19 +106,19 @@ namespace LinkUpBackend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "0aecf550-53ad-4363-8729-056ea7a2a407",
+                            Id = "2aa44a11-7b8b-45e8-9db0-9f7260169d17",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         },
                         new
                         {
-                            Id = "1285b52d-615e-471c-9418-f340cc7832e4",
+                            Id = "56f82fdd-9d03-443d-b781-ed3e88fc2e00",
                             Name = "Contractor",
                             NormalizedName = "CONTRACTOR"
                         },
                         new
                         {
-                            Id = "095d7b3b-826c-40dd-b64d-4e5c0916dd76",
+                            Id = "ac35f991-85ed-4143-8076-a84ef06a10fe",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
