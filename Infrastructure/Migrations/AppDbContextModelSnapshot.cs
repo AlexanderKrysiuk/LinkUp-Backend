@@ -22,7 +22,6 @@ namespace LinkUpBackend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-
             modelBuilder.Entity("LinkUpBackend.Models.ArchiveMeeting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -76,21 +75,6 @@ namespace LinkUpBackend.Migrations
                     b.HasIndex("MeetingId");
 
                     b.ToTable("MeetingsOrganizators");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.Property<string>("ParticipantId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ParticipantId", "MeetingId");
-
-                    b.HasIndex("MeetingId");
-
-                    b.ToTable("MeetingsParticipants");
                 });
 
             modelBuilder.Entity("LinkUpBackend.Models.Role", b =>
@@ -326,25 +310,6 @@ namespace LinkUpBackend.Migrations
                     b.Navigation("Meeting");
 
                     b.Navigation("Organizator");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.HasOne("LinkUpBackend.Models.Meeting", "Meeting")
-                        .WithMany()
-                        .HasForeignKey("MeetingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LinkUpBackend.Models.User", "Participant")
-                        .WithMany()
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Meeting");
-
-                    b.Navigation("Participant");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
