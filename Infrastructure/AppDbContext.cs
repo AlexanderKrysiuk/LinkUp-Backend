@@ -9,11 +9,8 @@ namespace LinkUpBackend.Infrastructure
         public override DbSet<Role> Roles => Set<Role>();
         public DbSet<Meeting> Meetings {get;set;}
 
-        public DbSet<MeetingParticipant> MeetingsParticipants { get; set; }
-
         public DbSet<ArchiveMeeting> Archive { get; set; }
         public DbSet<MeetingOrganizator> MeetingsOrganizators {get;set;}
-
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { }
 
@@ -46,17 +43,6 @@ namespace LinkUpBackend.Infrastructure
                 .HasForeignKey(x => x.OrganizatorId);
 
             builder.Entity<MeetingOrganizator>()
-                .HasOne(x => x.Meeting)
-                .WithMany()
-                .HasForeignKey(x => x.MeetingId);
-
-            builder.Entity<MeetingParticipant>().HasKey(x => new { x.ParticipantId, x.MeetingId });
-            builder.Entity<MeetingParticipant>()
-                .HasOne(x => x.Participant)
-                .WithMany()
-                .HasForeignKey(x => x.ParticipantId);
-
-            builder.Entity<MeetingParticipant>()
                 .HasOne(x => x.Meeting)
                 .WithMany()
                 .HasForeignKey(x => x.MeetingId);

@@ -1,8 +1,6 @@
 namespace LinkUpBackend.Models;
 public class MeetingParticipant{
-    public string? ParticipantId { get; set; }
-    public Guid MeetingId { get; set; }
-
-    public User? Participant { get; set; }
-    public Meeting? Meeting { get; set; }
+    public Guid ParticipantId {get;set;}
+    public Guid MeetingId {get;set;}
+    public string? Description {get;set;}
 }
