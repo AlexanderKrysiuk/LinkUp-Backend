@@ -266,7 +266,7 @@ public class MeetingsController : Controller{
             .Where(meeting => userMeetingsIds.Contains(meeting.Id))
             .ToListAsync();
         return Ok(myMeetings);
-
+    }
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("upcoming")]
