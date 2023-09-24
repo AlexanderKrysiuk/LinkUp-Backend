@@ -259,14 +259,14 @@ public class MeetingsController : Controller{
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail!);
         var userMeetingsIds = await dbContext.MeetingsParticipants
-            .Where(x => x.ParticipantId== user!.Id)
+            .Where(x => x.ParticipantId == user!.Id)
             .Select(x => x.MeetingId)
             .ToListAsync();
         var myMeetings = await dbContext.Meetings
             .Where(meeting => userMeetingsIds.Contains(meeting.Id))
             .ToListAsync();
         return Ok(myMeetings);
-
+    }
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("upcoming")]
