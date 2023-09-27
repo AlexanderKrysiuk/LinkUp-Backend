@@ -11,6 +11,10 @@ public static class Errors
             code: "User.InvalidPassword",
             description: $"Password must be at least 8 characters long and contain at least one of each: uppercase letter, lowercase letter, digit, special character"
         );
+        public static Error WrongPassword => Error.Custom(type: (int)CustomErrorType.Authorization,
+           code: "User.WrongPassword",
+           description: $"Wrong Password"
+       );
 
         public static Error InvalidName => Error.Validation(
             code: "User.InvalidName",
@@ -24,8 +28,10 @@ public static class Errors
             code: "User.NotFound",
             description: "User not found"
         );
-
-        
+        public static Error InvalidId => Error.Validation(
+            code: "User.InvalidId",
+            description: "User ID in invalid format"
+        );
     }
     public static List<ErrorOr.Error> MapIdentityErrorsToErrorOrErrors(IEnumerable<IdentityError> errors)
     {
