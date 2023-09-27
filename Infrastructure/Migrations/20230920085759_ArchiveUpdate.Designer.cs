@@ -3,6 +3,7 @@ using System;
 using LinkUpBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LinkUpBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230920085759_ArchiveUpdate")]
+    partial class ArchiveUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,7 +24,6 @@ namespace LinkUpBackend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
 
             modelBuilder.Entity("LinkUpBackend.Models.ArchiveMeeting", b =>
                 {
@@ -76,21 +78,6 @@ namespace LinkUpBackend.Migrations
                     b.HasIndex("MeetingId");
 
                     b.ToTable("MeetingsOrganizators");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.Property<string>("ParticipantId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ParticipantId", "MeetingId");
-
-                    b.HasIndex("MeetingId");
-
-                    b.ToTable("MeetingsParticipants");
                 });
 
             modelBuilder.Entity("LinkUpBackend.Models.Role", b =>
@@ -326,25 +313,6 @@ namespace LinkUpBackend.Migrations
                     b.Navigation("Meeting");
 
                     b.Navigation("Organizator");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.HasOne("LinkUpBackend.Models.Meeting", "Meeting")
-                        .WithMany()
-                        .HasForeignKey("MeetingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LinkUpBackend.Models.User", "Participant")
-                        .WithMany()
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Meeting");
-
-                    b.Navigation("Participant");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
