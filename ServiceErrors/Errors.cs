@@ -33,23 +33,23 @@ public static class Errors
             description: "User ID in invalid format"
         );
     }
-    public static List<ErrorOr.Error> MapIdentityErrorsToErrorOrErrors(IEnumerable<IdentityError> errors)
+    public static List<Error> MapIdentityErrorsToErrorOrErrors(IEnumerable<IdentityError> errors)
     {
         return errors.Select(error =>
         {
             if (error.Code == "DuplicateEmail")
             {
-                return ErrorOr.Error.Conflict(description: "Email conflict");
+                return Error.Conflict(description: "Email conflict");
             }
             if (error.Code == "DuplicateUserName")
             {
-                return ErrorOr.Error.Conflict(description: "Username conflict");
+                return Error.Conflict(description: "Username conflict");
             }
             if (error.Code == "InvalidUserName")
             {
-                return ServiceErrors.Errors.User.InvalidName;
+                return User.InvalidName;
             }
-            return ErrorOr.Error.Failure(description: error.Code + ": " + error.Description);
+            return Error.Failure(description: error.Code + ": " + error.Description);
         }).ToList();
     }
 }

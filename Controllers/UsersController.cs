@@ -54,51 +54,12 @@ public class UsersController : ApiController
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RegisterAsync([FromBody] UserToRegisterDTO userToRegister)
     {
-        var errorOrUser = Models.User.Create(userToRegister);
-        if (errorOrUser.IsError)
+        ErrorOr<User> errorOrRegisteredUser = await _usersService.RegisterUser(userToRegister);
+        if (errorOrRegisteredUser.IsError)
         {
-            return Problem(errorOrUser.Errors);
+            return Problem(errorOrRegisteredUser.Errors);
         }
-        var user = errorOrUser.Value;
-        bool hasUserBeenCreated = false;
-        List<ErrorOr.Error> errors = new();
-        try
-        {
-            var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
-
-            if (!userRegistrationResult.Succeeded)
-            {
-                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userRegistrationResult.Errors));
-                return Problem(errors);
-            }
-            hasUserBeenCreated = true;
-            var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
-
-            if (!userToRoleResult.Succeeded)
-            {
-                var userDeletionResult = await _userManager.DeleteAsync(user);
-                if (!userDeletionResult.Succeeded)
-                {
-                    // TODO: Log cleaning user error here
-                }
-                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userToRoleResult.Errors));
-                return Problem(errors);
-            }
-        }
-        catch (Exception e)
-        {
-            if (hasUserBeenCreated)
-            {
-                var userDeletionResult = await _userManager.DeleteAsync(user);
-                if (!userDeletionResult.Succeeded)
-                {
-                    // TODO: Log cleaning user error here
-                }
-            }
-            errors.Add(ErrorOr.Error.Failure(description:e.Message));
-            return Problem(errors);
-        }
-
+        var user = errorOrRegisteredUser.Value;
         return Accepted($"User {user.UserName} has been registered.");
     }
 

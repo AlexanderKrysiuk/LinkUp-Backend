@@ -168,5 +168,54 @@ namespace LinkUpBackend.Services
             await WriteTokenToUser(token, user);
             return token;
         }
+
+        public async Task<ErrorOr<User>> RegisterUser(UserToRegisterDTO userToRegister)
+        {
+            var errorOrUser = Models.User.Create(userToRegister);
+            if (errorOrUser.IsError)
+            {
+                return errorOrUser.Errors;
+            }
+            var user = errorOrUser.Value;
+            bool hasUserBeenCreated = false;
+            List<Error> errors = new();
+            try
+            {
+                var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
+
+                if (!userRegistrationResult.Succeeded)
+                {
+                    errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userRegistrationResult.Errors));
+                    return errors;
+                }
+                hasUserBeenCreated = true;
+                var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
+
+                if (!userToRoleResult.Succeeded)
+                {
+                    var userDeletionResult = await _userManager.DeleteAsync(user);
+                    if (!userDeletionResult.Succeeded)
+                    {
+                        // TODO: Log cleaning user error here
+                    }
+                    errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userToRoleResult.Errors));
+                    return errors;
+                }
+            }
+            catch (Exception e)
+            {
+                if (hasUserBeenCreated)
+                {
+                    var userDeletionResult = await _userManager.DeleteAsync(user);
+                    if (!userDeletionResult.Succeeded)
+                    {
+                        // TODO: Log cleaning user error here
+                    }
+                }
+                errors.Add(Error.Failure(description: e.Message));
+                return errors;
+            }
+            return user;
+        }
     }
 }
