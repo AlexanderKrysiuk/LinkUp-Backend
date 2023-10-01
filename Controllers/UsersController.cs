@@ -27,21 +27,13 @@ public class UsersController : ApiController
 {
     private readonly UsersService _usersService;
     private readonly UserManager<User> _userManager;
-
-    private readonly JwtConfiguration _jwtConfiguration;
-
-    private readonly SignInManager<User> _signInManager;
-
     private readonly IConfiguration _configuration;
-
     //private readonly ILogger<UsersController> _logger;
 
     public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtConfiguration> jwtConfiguration, IConfiguration configuration)
     {
         _usersService = new UsersService(userManager, signInManager, jwtConfiguration.Value, configuration);
         _userManager = userManager;
-        _jwtConfiguration = jwtConfiguration.Value;
-        _signInManager = signInManager; 
        _configuration = configuration;
     }
 
@@ -81,10 +73,6 @@ public class UsersController : ApiController
             token = new JwtSecurityTokenHandler().WriteToken(token),
             expiration = token.ValidTo
         });
-        /*var userToLoginResult = await _userManager.FindByEmailAsync(userToLogin.Email);
-
-         if (userToLoginResult != null && await _userManager.CheckPasswordAsync(userToLoginResult, userToLogin.Password))
-         {*/
     }
 
     [HttpGet("access-denied")]
@@ -162,7 +150,12 @@ public class UsersController : ApiController
     public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await _userManager.FindByEmailAsync(userEmail);
+        var errorOrUser = await _usersService.GetUserByEmail(userEmail!);
+        if (errorOrUser.IsError)
+        {
+            return Problem(errorOrUser.Errors);
+        }
+        User user = errorOrUser.Value;
 
         string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
         var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
@@ -193,7 +186,7 @@ public class UsersController : ApiController
                 return BadRequest("Invalid profile picture."); //TODO
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, "An error occurred while processing the picture."); //TODO
         }
@@ -206,7 +199,12 @@ public class UsersController : ApiController
     public async Task<IActionResult> GetProfilePicture()
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await _userManager.FindByEmailAsync(userEmail);
+        var errorOrUser = await _usersService.GetUserByEmail(userEmail!);
+        if (errorOrUser.IsError)
+        {
+            return Problem(errorOrUser.Errors);
+        }
+        User user = errorOrUser.Value;
 
         string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
         var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
@@ -227,7 +225,7 @@ public class UsersController : ApiController
                 return NotFound("File not found.");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, "An error occurred while processing the picture.");
         }

@@ -33,6 +33,15 @@ public static class Errors
             description: "User ID in invalid format"
         );
     }
+
+    public static class Meeting
+    {
+        public static Error NotFound = Error.NotFound(code: "Meeting.NotFound", description: "Meeting not found");
+        public static Error AlreadyFull = Error.Failure(code: "Meeting.AlreadyFull", description: "Meeting already full");
+        public static Error JoinedOwned = Error.Failure(code: "Meeting.JoindOwned", description: "Tried to join owned meeting");
+        public static Error AlreadyJoined = Error.Failure(code: "Meeting.AlreadyJoined", description: "Tried to join already joined meeting");
+        public static Error NotAParticipant = Error.Failure(code: "Meeting.NotAParticipant", description: "This user is not participating in selected meeting");
+    }
     public static List<Error> MapIdentityErrorsToErrorOrErrors(IEnumerable<IdentityError> errors)
     {
         return errors.Select(error =>

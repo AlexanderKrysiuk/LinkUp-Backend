@@ -9,14 +9,19 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using LinkUpBackend.Migrations;
 using System.Diagnostics.Eventing.Reader;
+using LinkUpBackend.Services;
+using ErrorOr;
+using LinkUpBackend.Controllers;
 
 namespace Meetings.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class MeetingsController : Controller{
+public class MeetingsController : ApiController{
     private readonly AppDbContext dbContext;
     private readonly UserManager<User> userManager;
+    private readonly MeetingsService _meetingsService;
     public MeetingsController(AppDbContext dbContext, UserManager<User> userManager){
+        _meetingsService = new MeetingsService(dbContext, userManager);
         this.dbContext = dbContext;
         this.userManager = userManager;
     }
@@ -129,36 +134,11 @@ public class MeetingsController : Controller{
     {
 
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var meeting = await dbContext.Meetings.FindAsync(id);
-        if (meeting == null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.JoinMeeting(id, userEmail);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("No such meeting");
+            return Problem(errorOrSuccess.Errors);
         }
-        var organizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
-        if (organizators.Contains(user!.Id))
-        {
-            return BadRequest("Tried to join owned meeting");
-        }
-        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
-        if (currentParticipants.Contains(user.Id))
-        {
-            return BadRequest("User already in the meeting");
-        }
-        if (currentParticipants.Count == meeting.MaxParticipants)
-        {
-            return BadRequest("Meeting already full");
-        }
-        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { MeetingId = meeting.Id, ParticipantId = user.Id, Participant = user, Meeting = meeting });
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
-        }
-
         return Ok();
     }
 
@@ -167,25 +147,10 @@ public class MeetingsController : Controller{
     public async Task<IActionResult> LeaveMeeting([FromRoute] Guid id)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var meeting = await dbContext.Meetings.FindAsync(id);
-        if (meeting == null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.LeaveMeeting(id, userEmail);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("No such meeting");
-        }
-        var userRegisteredParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == meeting.Id && x.ParticipantId == user!.Id);
-        if (userRegisteredParticipation is null)
-        {
-            return BadRequest("This user is not participating in selected meeting");
-        }
-        dbContext.MeetingsParticipants.Remove(userRegisteredParticipation);
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+            return Problem(errorOrSuccess.Errors);
         }
         return Ok();
     }

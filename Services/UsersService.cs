@@ -16,17 +16,32 @@ namespace LinkUpBackend.Services
 {
     public class UsersService
     {
+        public enum ServiceModes
+        {
+            Manager,
+            Authorizator
+        }
         private UserManager<User> _userManager;
-        private SignInManager<User> _signInManager;
-        private JwtConfiguration _jwtConfiguration;
-        private IConfiguration _configuration;
-        public UsersService(UserManager<User> userManager, SignInManager<User> signInManager, JwtConfiguration jwtConfiguration, IConfiguration configuration)
+        private SignInManager<User>? _signInManager;
+        private JwtConfiguration? _jwtConfiguration;
+        private IConfiguration? _configuration;
+        public UsersService(UserManager<User> userManager, SignInManager<User>? signInManager = null, JwtConfiguration? jwtConfiguration = null, IConfiguration? configuration = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _jwtConfiguration = jwtConfiguration;
         }
+
+        public ServiceModes GetServiceMode()
+        {
+            if (_signInManager is null || _configuration is null || _jwtConfiguration is null)
+            {
+                return ServiceModes.Manager;
+            }
+            return ServiceModes.Authorizator;
+        }
+
         private async Task<ErrorOr<User>> GetUser(string? id = null, string? email = null)
         {
             try
