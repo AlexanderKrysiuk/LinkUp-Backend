@@ -128,6 +128,10 @@ namespace LinkUpBackend.Services
 
         public JwtSecurityToken GenerateToken(User user, string userRole)
         {
+            if(_configuration is null)
+            {
+                throw new Exception("_configuration is null, providing the service constructor with configuration parameter is neccesarry to call this function.");
+            }
             var issuer = _configuration["Authentication:Jwt:Issuer"];
             var audience = _configuration["Authentication:Jwt:Audience"];
             var signingKey = _configuration["Authentication:Jwt:SigningKey"];

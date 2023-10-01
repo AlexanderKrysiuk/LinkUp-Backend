@@ -41,12 +41,11 @@ public class MeetingsController : ApiController{
  
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin,Contractor")]
-    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
         // Searching for users
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
 
         if (DateTime.TryParse(request.DateTime, out DateTime dateTime)) {
             var meeting = new Meeting
@@ -116,7 +115,7 @@ public class MeetingsController : ApiController{
     [Route("organizator/my-meetings")]
     public async Task<IActionResult> GetMyMeetingsAsOrganizator(){
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var myMeetingsIds = await dbContext.MeetingsOrganizators
             .Where(mo => mo.OrganizatorId == user.Id.ToString())
             .Select(mo => mo.MeetingId)
@@ -134,7 +133,7 @@ public class MeetingsController : ApiController{
     {
 
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        ErrorOr<bool> errorOrSuccess = await _meetingsService.JoinMeeting(id, userEmail);
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.JoinMeeting(id, userEmail!);
         if (errorOrSuccess.IsError)
         {
             return Problem(errorOrSuccess.Errors);
@@ -147,7 +146,7 @@ public class MeetingsController : ApiController{
     public async Task<IActionResult> LeaveMeeting([FromRoute] Guid id)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        ErrorOr<bool> errorOrSuccess = await _meetingsService.LeaveMeeting(id, userEmail);
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.LeaveMeeting(id, userEmail!);
         if (errorOrSuccess.IsError)
         {
             return Problem(errorOrSuccess.Errors);
@@ -160,7 +159,7 @@ public class MeetingsController : ApiController{
     public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        ErrorOr<bool> errorOrSuccess = await _meetingsService.RescheduleMeeting(rescheduleInfo, userEmail);
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.RescheduleMeeting(rescheduleInfo, userEmail!);
         if (errorOrSuccess.IsError)
         {
             return Problem(errorOrSuccess.Errors);
@@ -203,7 +202,7 @@ public class MeetingsController : ApiController{
     public async Task<IActionResult> GetUpcomingMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var userRole = await userManager.GetRolesAsync(user);
 
         //if (userRole.Contains("Client")
@@ -241,7 +240,7 @@ public class MeetingsController : ApiController{
     public async Task<IActionResult> GetArchivedMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var userRole = await userManager.GetRolesAsync(user);
 
         //if (userRole.Contains("Client")

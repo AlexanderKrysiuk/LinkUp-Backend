@@ -19,7 +19,7 @@ namespace LinkUpBackend.Services
             _usersService = new UsersService(userManager);
         }
 
-        public async Task<ErrorOr<bool>> JoinMeeting(Guid id, string? userEmail)
+        public async Task<ErrorOr<bool>> JoinMeeting(Guid id, string userEmail)
         {
             var errorOrUser = await _usersService.GetUserByEmail(userEmail);
             if(errorOrUser.IsError)
@@ -58,7 +58,7 @@ namespace LinkUpBackend.Services
             return true;
         }
 
-        public async Task<ErrorOr<bool>> LeaveMeeting(Guid id, string? userEmail)
+        public async Task<ErrorOr<bool>> LeaveMeeting(Guid id, string userEmail)
         {
             var errorOrUser = await _usersService.GetUserByEmail(userEmail);
             if (errorOrUser.IsError)
