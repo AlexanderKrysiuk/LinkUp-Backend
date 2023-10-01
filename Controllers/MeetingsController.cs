@@ -160,45 +160,10 @@ public class MeetingsController : ApiController{
     public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var oldMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.OldMeetingId);
-        var newMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.NewMeetingId);
-        if (oldMeeting is null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.RescheduleMeeting(rescheduleInfo, userEmail);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("Tried to reschedule from non existant meeting");
-        }
-        if (newMeeting is null)
-        {
-            return NotFound("Tried to reschedule to non existant meeting");
-        }
-        var userRegisteredOldParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == oldMeeting.Id && x.ParticipantId == user!.Id);
-        if (userRegisteredOldParticipation is null)
-        {
-            return BadRequest("Tried to reschedule from a meeting that the user is not participating in");
-        }
-        var newMeetingOrganizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
-        if (newMeetingOrganizators.Contains(user!.Id))
-        {
-            return BadRequest("Tried to reschedule to owned meeting");
-        }
-        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
-        if (currentParticipants.Contains(user.Id))
-        {
-            return BadRequest("Tried to reschedule to a meeting that user is already participating in");
-        }
-        if (currentParticipants.Count == newMeeting.MaxParticipants)
-        {
-            return BadRequest("Tried to reschedule to an already full meeting");
-        }
-        dbContext.MeetingsParticipants.Remove(userRegisteredOldParticipation);
-        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { Meeting = newMeeting, MeetingId = newMeeting.Id, Participant = user, ParticipantId = user.Id });
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+            return Problem(errorOrSuccess.Errors);
         }
         return Ok();
     }

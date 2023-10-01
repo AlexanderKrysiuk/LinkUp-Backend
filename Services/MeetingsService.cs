@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using LinkUpBackend.Infrastructure;
 using LinkUpBackend.ServiceErrors;
 using System.Data.SqlTypes;
+using LinkUpBackend.DTOs;
 
 namespace LinkUpBackend.Services
 {
@@ -83,6 +84,56 @@ namespace LinkUpBackend.Services
             catch (Exception)
             {
                 return Error.Unexpected(description: "Due to server error couldn't leave the meeting, try to contact service administrator");
+            }
+            return true;
+        }
+
+        public async Task<ErrorOr<bool>> RescheduleMeeting(RescheduleMeetingDTO rescheduleInfo, string userEmail)
+        {
+            var errorOrUser = await _usersService.GetUserByEmail(userEmail);
+            if (errorOrUser.IsError)
+            {
+                return errorOrUser.Errors;
+            }
+            var user = errorOrUser.Value;
+            var oldMeeting = await _dbContext.Meetings.FindAsync(rescheduleInfo.OldMeetingId);
+            if (oldMeeting == null)
+            {
+                return Errors.Meeting.NotFound;
+            }
+            var newMeeting = await _dbContext.Meetings.FindAsync(rescheduleInfo.NewMeetingId);
+            if (newMeeting == null)
+            {
+                return Errors.Meeting.NotFound;
+            }
+            var userRegisteredOldParticipation = await _dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == oldMeeting.Id && x.ParticipantId == user!.Id);
+            if (userRegisteredOldParticipation is null)
+            {
+                return Errors.Meeting.NotAParticipant;
+            }
+            var newMeetingOrganizators = await _dbContext.MeetingsOrganizators.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
+            if (newMeetingOrganizators.Contains(user!.Id))
+            {
+                return Errors.Meeting.JoinedOwned;
+            }
+            var currentParticipants = await _dbContext.MeetingsParticipants.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
+            if (currentParticipants.Contains(user.Id))
+            {
+                return Errors.Meeting.AlreadyJoined;
+            }
+            if (currentParticipants.Count == newMeeting.MaxParticipants)
+            {
+                return Errors.Meeting.AlreadyFull;
+            }
+            _dbContext.MeetingsParticipants.Remove(userRegisteredOldParticipation);
+            _dbContext.MeetingsParticipants.Add(new MeetingParticipant() { Meeting = newMeeting, MeetingId = newMeeting.Id, Participant = user, ParticipantId = user.Id });
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return Error.Unexpected(description: "Due to server error couldn't reschedule the meeting, try to contact service administrator");
             }
             return true;
         }
