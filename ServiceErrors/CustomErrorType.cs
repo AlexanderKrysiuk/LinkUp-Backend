@@ -2,6 +2,7 @@
 {
     public enum CustomErrorType
     {
-        Authorization = 5
+        Authorization = 5,
+        BadRequest = 6
     }
 }

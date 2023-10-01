@@ -25,6 +25,7 @@ namespace LinkUpBackend.Controllers
             var firstError = errors[0];
             var statusCode = (int)firstError.Type switch
             {
+                (int)CustomErrorType.BadRequest => StatusCodes.Status400BadRequest,
                 (int)CustomErrorType.Authorization => StatusCodes.Status401Unauthorized,
                 (int)ErrorType.NotFound => StatusCodes.Status404NotFound,
                 (int)ErrorType.Validation => StatusCodes.Status400BadRequest,
