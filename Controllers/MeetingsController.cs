@@ -25,9 +25,17 @@ public class MeetingsController : ApiController{
         this.dbContext = dbContext;
         this.userManager = userManager;
     }
+    [Authorize]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetMeetings(){
-        return Ok(await dbContext.Meetings.ToListAsync());
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var errorOrMeetingsDtos = await _meetingsService.GetAllMeetings(userEmail);
+        if(errorOrMeetingsDtos.IsError) {
+            Problem(errorOrMeetingsDtos.Errors);
+        }
+        var meetingsDtos = errorOrMeetingsDtos.Value;
+        return Ok(meetingsDtos);
     }
     [HttpGet]
     [Route("{id:guid}")]
@@ -171,13 +179,12 @@ public class MeetingsController : ApiController{
     [Route("client/{id:guid}")]
     public async Task<IActionResult> GetMeetingsByParticipant([FromRoute] Guid id)
     {
-        var organizatorMeetingsIds = await dbContext.MeetingsParticipants
-            .Where(x => x.ParticipantId == id.ToString())
-            .Select(x => x.MeetingId)
-            .ToListAsync();
-        var meetings = await dbContext.Meetings
-            .Where(m => organizatorMeetingsIds.Contains(m.Id))
-            .ToListAsync();
+        var errorOrMeetings = await _meetingsService.GetJoinedMeetingsByUserId(id.ToString());
+        if (errorOrMeetings.IsError)
+        {
+            return Problem(errorOrMeetings.Errors);
+        }
+        var meetings = errorOrMeetings.Value;
         return Ok(meetings);
     }
 
@@ -187,15 +194,15 @@ public class MeetingsController : ApiController{
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail!);
-        var userMeetingsIds = await dbContext.MeetingsParticipants
-            .Where(x => x.ParticipantId== user!.Id)
-            .Select(x => x.MeetingId)
-            .ToListAsync();
-        var myMeetings = await dbContext.Meetings
-            .Where(meeting => userMeetingsIds.Contains(meeting.Id))
-            .ToListAsync();
+        var errorOrMeetings = await _meetingsService.GetJoinedMeetingsByEmail(userEmail!);
+        if (errorOrMeetings.IsError)
+        {
+            return Problem(errorOrMeetings.Errors);
+        }
+        var myMeetings = errorOrMeetings.Value;
         return Ok(myMeetings);
     }
+
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("upcoming")]

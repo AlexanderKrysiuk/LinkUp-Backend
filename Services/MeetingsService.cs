@@ -6,6 +6,7 @@ using LinkUpBackend.Infrastructure;
 using LinkUpBackend.ServiceErrors;
 using System.Data.SqlTypes;
 using LinkUpBackend.DTOs;
+using System.Security.Claims;
 
 namespace LinkUpBackend.Services
 {
@@ -137,5 +138,56 @@ namespace LinkUpBackend.Services
             }
             return true;
         }
+
+        public async Task<ErrorOr<List<Guid>>> GetJoinedMeetingsIdsByUserId(string userId)
+        {
+            var userMeetingsIds = await _dbContext.MeetingsParticipants
+                .Where(x => x.ParticipantId == userId)
+                .Select(x => x.MeetingId)
+                .ToListAsync();
+            return userMeetingsIds;
+        }
+
+        public async Task<ErrorOr<List<Meeting>>> GetJoinedMeetingsByUserId(string userId)
+        {
+            var errorOrMeetingsIds = await GetJoinedMeetingsIdsByUserId(userId);
+            var userMeetingsIds = errorOrMeetingsIds.Value;
+            var myMeetings = await _dbContext.Meetings
+                .Where(meeting => userMeetingsIds.Contains(meeting.Id))
+                .ToListAsync();
+            return myMeetings;
+        }
+
+        public async Task<ErrorOr<List<Meeting>>> GetJoinedMeetingsByEmail(string userEmail)
+        {
+            var errorOrUser = await _usersService.GetUserByEmail(userEmail);
+            if (errorOrUser.IsError)
+            {
+                return errorOrUser.Errors;
+            }
+            return await GetJoinedMeetingsByUserId(errorOrUser.Value.Id);
+        }
+
+        public async Task<ErrorOr<List<MeetingDTO>>> GetAllMeetings(string? userEmail)
+        {
+            var meetings = await _dbContext.Meetings.ToListAsync();
+            if (userEmail == null)
+            {
+                return meetings.Select(meeting => new MeetingDTO(meeting, false)).ToList();
+            }
+            var errorOrUser = await _usersService.GetUserByEmail(userEmail);
+            if (errorOrUser.IsError)
+            {
+                return errorOrUser.Errors;
+            }
+            var user = errorOrUser.Value;
+            var errorOrJoinedMeetingsIds = await GetJoinedMeetingsIdsByUserId(user.Id);
+            if (errorOrJoinedMeetingsIds.IsError)
+            {
+                return errorOrJoinedMeetingsIds.Errors;
+            }
+            var joinedMeetingsIds = errorOrJoinedMeetingsIds.Value;
+            return meetings.Select(meeting => new MeetingDTO(meeting, joinedMeetingsIds.Contains(meeting.Id))).ToList();
+        } 
     }
 }
