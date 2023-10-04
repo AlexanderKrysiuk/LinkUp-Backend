@@ -86,16 +86,17 @@ public class UsersController : ApiController
     [HttpGet("contractors")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllContractors(){
-        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userRole = HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
         var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
         var contractorsInfo = contractors.Select(user => new{
             UserName = user.UserName,
             Email = user.Email
             });
-        if(userEmail == null)
+        if(userRole != "Contractor")
         {
             return Ok(contractorsInfo);
         }
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return Ok(contractorsInfo.Where(contractor =>  contractor.Email != userEmail));
     }
 
