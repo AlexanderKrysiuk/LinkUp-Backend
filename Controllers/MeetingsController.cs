@@ -105,18 +105,19 @@ public class MeetingsController : ApiController{
         }
         return NotFound();
     }
+    [Authorize]
+    [AllowAnonymous]
     [HttpGet]
     [Route("organizator/{email}")]
     public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] string email){
-        var contractor = await userManager.FindByEmailAsync(email);
-        var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
-            .Where(mo => mo.OrganizatorId == contractor.Id.ToString())
-            .Select(mo => mo.MeetingId)
-            .ToListAsync();
-        var meetings = await dbContext.Meetings
-            .Where(m => organizatorMeetingsIds.Contains(m.Id))
-            .ToListAsync();
-        return Ok(meetings);
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var errorOrMeetingDtos = await _meetingsService.GetMeetingsByOrganizator(email, userEmail);
+        if (errorOrMeetingDtos.IsError)
+        {
+            return Problem(errorOrMeetingDtos.Errors);
+        }
+        var meetingDtos = errorOrMeetingDtos.Value;
+        return Ok(meetingDtos);
     }
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]

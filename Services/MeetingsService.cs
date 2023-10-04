@@ -168,9 +168,8 @@ namespace LinkUpBackend.Services
             return await GetJoinedMeetingsByUserId(errorOrUser.Value.Id);
         }
 
-        public async Task<ErrorOr<List<MeetingDTO>>> GetAllMeetings(string? userEmail)
+        public async Task<ErrorOr<List<MeetingDTO>>> AddInformationAboutUserParticipation(List<Meeting> meetings, string? userEmail)
         {
-            var meetings = await _dbContext.Meetings.ToListAsync();
             if (userEmail == null)
             {
                 return meetings.Select(meeting => new MeetingDTO(meeting, false)).ToList();
@@ -188,6 +187,25 @@ namespace LinkUpBackend.Services
             }
             var joinedMeetingsIds = errorOrJoinedMeetingsIds.Value;
             return meetings.Select(meeting => new MeetingDTO(meeting, joinedMeetingsIds.Contains(meeting.Id))).ToList();
-        } 
+        }
+
+        public async Task<ErrorOr<List<MeetingDTO>>> GetAllMeetings(string? userEmail)
+        {
+            var meetings = await _dbContext.Meetings.ToListAsync();
+            return await AddInformationAboutUserParticipation(meetings, userEmail);
+        }
+
+        public async Task<ErrorOr<List<MeetingDTO>>> GetMeetingsByOrganizator(string organizatorEmail, string? userEmail)
+        {
+            var errorOrOrganizator = await _usersService.GetUserByEmail(organizatorEmail);
+            if(errorOrOrganizator.IsError)
+            {
+                return errorOrOrganizator.Errors;
+            }
+            var organizator = errorOrOrganizator.Value;
+            var meetingsIds = await _dbContext.MeetingsOrganizators.Where(pair => pair.OrganizatorId == organizator.Id).Select(pair => pair.MeetingId).ToListAsync();
+            var meetings = await _dbContext.Meetings.Where(meeting => meetingsIds.Contains(meeting.Id)).ToListAsync();
+            return await AddInformationAboutUserParticipation(meetings, userEmail);
+        }
     }
 }
