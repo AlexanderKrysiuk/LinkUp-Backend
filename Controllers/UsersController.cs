@@ -2,19 +2,15 @@
 using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
 using LinkUpBackend.ServiceErrors;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Linq;
 
 
 namespace LinkUpBackend.Controllers;
@@ -119,7 +115,7 @@ public class UsersController : ApiController
     }
 
     /// <summary>
-    /// Signs user in.
+    /// Signs user in
     /// </summary>
     /// <remarks>
     /// Sample request:
@@ -178,6 +174,11 @@ public class UsersController : ApiController
         return Unauthorized();
     }
 
+    /// <summary>
+    /// Signs user out
+    /// </summary>
+    /// <response code="202">Request is accepted and further processed</response>
+    /// <response code="401">User has not been authorized for this action</response>
     [HttpOptions("logout")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -188,8 +189,18 @@ public class UsersController : ApiController
         return Accepted();
     }
 
+    /// <summary>
+    /// Handles access denied
+    /// </summary>
+    /// <remarks>
+    /// This method handles HTTP GET requests at the "/access-denied" path.
+    /// It is used to deny access to specific resources. 
+    /// If the client lacks the necessary permissions or is unauthenticated, 
+    /// it returns an HTTP status code of 403 Forbidden.
+    /// </remarks>
     [HttpGet("access-denied")]
     //[ResponseCache(CacheProfileName = "NoCache")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [AllowAnonymous]
     public IActionResult AccessDenied()
     {
