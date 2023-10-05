@@ -235,7 +235,6 @@ public class UsersController : ApiController
     /// <summary>
     /// Gets user role
     /// </summary>
-    /// <remarks>
     /// <returns>User role</returns>
     /// <response code="200">Returns user role</response>
     /// <response code="401">User has not been authorized for this action</response>
@@ -266,10 +265,7 @@ public class UsersController : ApiController
         }
     }
 
-    /// <summary>
-    /// Gets user details
-    /// </summary>
-    /// <remarks>
+    /// <summary>Gets user details</summary>
     /// <returns>User details</returns>
     /// <response code="200">Returns user details</response>
     /// <response code="401">User has not been authorized for this action</response>
