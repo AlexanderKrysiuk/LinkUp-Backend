@@ -160,7 +160,7 @@ public class UsersController : ApiController
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(1), // Ustal czas wygaśnięcia tokenu
+                expires: DateTime.Now.AddDays(1),
                 signingCredentials: creds
             );
             var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
@@ -207,7 +207,15 @@ public class UsersController : ApiController
         return Forbid();
     }
 
+    /// <summary>
+    /// Gets the list of all contractors
+    /// </summary>
+    /// <returns>All contractors' details</returns>
+    /// <response code="200">Request has been fulfilled successfully</response>
+    /// <response code="401">User has not been authorized for this action</response>
     [HttpGet("contractors")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllContractors(){
 
@@ -219,15 +227,23 @@ public class UsersController : ApiController
         return Ok(contractorsInfo);
     }
 
+    /// <summary>
+    /// Gets user role
+    /// </summary>
+    /// <remarks>
+    /// <returns>User role</returns>
+    /// <response code="200">Request is accepted and further processed</response>
+    /// <response code="401">User has not been registered</response>
+    /// <response code="404">No role has been assigned to the user</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-role")]
-    public async Task<IActionResult> GetLoggedInUser(){
-        // Pobierz identyfikator użytkownika z kontekstu uwierzytelniania
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUserRole(){
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (!string.IsNullOrEmpty(userEmail)){
-            // Użytkownik zalogowany
-            // Zwróć identyfikator użytkownika
             var user = await _userManager.FindByEmailAsync(userEmail);
             var userRole = await _userManager.GetRolesAsync(user);
             switch(userRole){
@@ -240,11 +256,8 @@ public class UsersController : ApiController
                 default:
                     return NotFound();
             }
-            return Ok(userRole);
         }else{
-        // Użytkownik nie jest zalogowany (brak identyfikatora użytkownika w kontekście uwierzytelniania)
-        // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
-        return Unauthorized("Użytkownik nie jest zalogowany.");
+        return Unauthorized("User is not logged.");
         }
     }
 
@@ -252,7 +265,7 @@ public class UsersController : ApiController
     [HttpGet("user-details")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetActionResultAsync()
+    public async Task<IActionResult> GetUserDetails()
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
