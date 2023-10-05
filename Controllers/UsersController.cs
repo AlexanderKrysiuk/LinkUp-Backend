@@ -43,6 +43,24 @@ public class UsersController : ApiController
        _configuration = configuration;
     }
 
+    /// <summary>
+    /// Signs up a new user
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     OPTIONS api/register
+    ///     {        
+    ///       "username": "John Doe",
+    ///       "email": "jdoe@gmail.com",
+    ///       "password": "P@ssw0rd",
+    ///       "role": "Contractor"
+    ///     }
+    /// </remarks>
+    /// <param name="userToRegister"></param>
+    /// <response code="202">Request is accepted and further processed</response>
+    /// <response code="400">Request parameters do not meet expected ones</response>
+    /// <response code="409">Email has been in use</response>
 
     [HttpOptions("register")]
     //[ResponseCache(CacheProfileName = "NoCache")]
@@ -100,7 +118,21 @@ public class UsersController : ApiController
         return Accepted($"User {user.UserName} has been registered.");
     }
 
-
+    /// <summary>
+    /// Signs user in.
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     OPTIONS api/login
+    ///     {        
+    ///       "email": "jdoe@gmail.com",
+    ///       "password": "P@ssw0rd",
+    ///     }
+    /// </remarks>
+    /// <param name="userToLogin"></param>
+    /// <response code="202">Request is accepted and further processed</response>
+    /// <response code="401">User has not been registered</response>
     [HttpOptions("login")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
