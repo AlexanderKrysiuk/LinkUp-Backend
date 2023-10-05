@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LinkUpBackend.DTOs
-{
-    public class UserDetailsDTO
-    {
+namespace LinkUpBackend.DTOs;
 
-        public string Username { get; set; } = string.Empty;
-  
-        public string Email { get; set; } = string.Empty;
-    }
+/// <summary>
+/// User details
+/// </summary>
+public class UserDetailsDTO
+{
+
+    public string Username { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
 }

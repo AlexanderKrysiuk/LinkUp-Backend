@@ -211,7 +211,7 @@ public class UsersController : ApiController
     /// Gets the list of all contractors
     /// </summary>
     /// <returns>All contractors' details</returns>
-    /// <response code="200">Request has been fulfilled successfully</response>
+    /// <response code="200">Rturns a list of contractors</response>
     /// <response code="401">User has not been authorized for this action</response>
     [HttpGet("contractors")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -232,8 +232,8 @@ public class UsersController : ApiController
     /// </summary>
     /// <remarks>
     /// <returns>User role</returns>
-    /// <response code="200">Request is accepted and further processed</response>
-    /// <response code="401">User has not been registered</response>
+    /// <response code="200">Returns user role</response>
+    /// <response code="401">User has not been authorized for this action</response>
     /// <response code="404">No role has been assigned to the user</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-role")]
@@ -261,9 +261,16 @@ public class UsersController : ApiController
         }
     }
 
+    /// <summary>
+    /// Gets user details
+    /// </summary>
+    /// <remarks>
+    /// <returns>User details</returns>
+    /// <response code="200">Returns user details</response>
+    /// <response code="401">User has not been authorized for this action</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-details")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetUserDetails()
     {
