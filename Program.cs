@@ -34,7 +34,7 @@ builder.Services.AddIdentity<User, Role>(options =>
                     {
                         options.User.RequireUniqueEmail = true;
                         options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-
+                        
                         options.Password.RequireDigit = true;
                         options.Password.RequireNonAlphanumeric = true;
                         options.Password.RequireLowercase = true;
@@ -105,12 +105,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
 
 app.UseCors();
 
