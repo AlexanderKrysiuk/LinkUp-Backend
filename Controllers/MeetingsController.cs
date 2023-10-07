@@ -9,20 +9,33 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using LinkUpBackend.Migrations;
 using System.Diagnostics.Eventing.Reader;
+using LinkUpBackend.Services;
+using ErrorOr;
+using LinkUpBackend.Controllers;
 
 namespace Meetings.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class MeetingsController : Controller{
+public class MeetingsController : ApiController{
     private readonly AppDbContext dbContext;
     private readonly UserManager<User> userManager;
+    private readonly MeetingsService _meetingsService;
     public MeetingsController(AppDbContext dbContext, UserManager<User> userManager){
+        _meetingsService = new MeetingsService(dbContext, userManager);
         this.dbContext = dbContext;
         this.userManager = userManager;
     }
+    [Authorize]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetMeetings(){
-        return Ok(await dbContext.Meetings.ToListAsync());
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var errorOrMeetingsDtos = await _meetingsService.GetAllMeetings(userEmail);
+        if(errorOrMeetingsDtos.IsError) {
+            Problem(errorOrMeetingsDtos.Errors);
+        }
+        var meetingsDtos = errorOrMeetingsDtos.Value;
+        return Ok(meetingsDtos);
     }
     [HttpGet]
     [Route("{id:guid}")]
@@ -36,12 +49,11 @@ public class MeetingsController : Controller{
  
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin,Contractor")]
-    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> AddMeeting(AddMeetingRequestDTO request){
         // Searching for users
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
 
         if (DateTime.TryParse(request.DateTime, out DateTime dateTime)) {
             var meeting = new Meeting
@@ -93,25 +105,26 @@ public class MeetingsController : Controller{
         }
         return NotFound();
     }
+    [Authorize]
+    [AllowAnonymous]
     [HttpGet]
     [Route("organizator/{email}")]
     public async Task<IActionResult> GetMeetingsFromOrganizator([FromRoute] string email){
-        var contractor = await userManager.FindByEmailAsync(email);
-        var organizatorMeetingsIds = await dbContext.MeetingsOrganizators
-            .Where(mo => mo.OrganizatorId == contractor.Id.ToString())
-            .Select(mo => mo.MeetingId)
-            .ToListAsync();
-        var meetings = await dbContext.Meetings
-            .Where(m => organizatorMeetingsIds.Contains(m.Id))
-            .ToListAsync();
-        return Ok(meetings);
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var errorOrMeetingDtos = await _meetingsService.GetMeetingsByOrganizator(email, userEmail);
+        if (errorOrMeetingDtos.IsError)
+        {
+            return Problem(errorOrMeetingDtos.Errors);
+        }
+        var meetingDtos = errorOrMeetingDtos.Value;
+        return Ok(meetingDtos);
     }
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("organizator/my-meetings")]
     public async Task<IActionResult> GetMyMeetingsAsOrganizator(){
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var myMeetingsIds = await dbContext.MeetingsOrganizators
             .Where(mo => mo.OrganizatorId == user.Id.ToString())
             .Select(mo => mo.MeetingId)
@@ -129,36 +142,11 @@ public class MeetingsController : Controller{
     {
 
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var meeting = await dbContext.Meetings.FindAsync(id);
-        if (meeting == null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.JoinMeeting(id, userEmail!);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("No such meeting");
+            return Problem(errorOrSuccess.Errors);
         }
-        var organizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
-        if (organizators.Contains(user!.Id))
-        {
-            return BadRequest("Tried to join owned meeting");
-        }
-        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == meeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
-        if (currentParticipants.Contains(user.Id))
-        {
-            return BadRequest("User already in the meeting");
-        }
-        if (currentParticipants.Count == meeting.MaxParticipants)
-        {
-            return BadRequest("Meeting already full");
-        }
-        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { MeetingId = meeting.Id, ParticipantId = user.Id, Participant = user, Meeting = meeting });
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
-        }
-
         return Ok();
     }
 
@@ -167,25 +155,10 @@ public class MeetingsController : Controller{
     public async Task<IActionResult> LeaveMeeting([FromRoute] Guid id)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var meeting = await dbContext.Meetings.FindAsync(id);
-        if (meeting == null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.LeaveMeeting(id, userEmail!);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("No such meeting");
-        }
-        var userRegisteredParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == meeting.Id && x.ParticipantId == user!.Id);
-        if (userRegisteredParticipation is null)
-        {
-            return BadRequest("This user is not participating in selected meeting");
-        }
-        dbContext.MeetingsParticipants.Remove(userRegisteredParticipation);
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+            return Problem(errorOrSuccess.Errors);
         }
         return Ok();
     }
@@ -195,45 +168,10 @@ public class MeetingsController : Controller{
     public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail!);
-        var oldMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.OldMeetingId);
-        var newMeeting = await dbContext.Meetings.FindAsync(rescheduleInfo.NewMeetingId);
-        if (oldMeeting is null)
+        ErrorOr<bool> errorOrSuccess = await _meetingsService.RescheduleMeeting(rescheduleInfo, userEmail!);
+        if (errorOrSuccess.IsError)
         {
-            return NotFound("Tried to reschedule from non existant meeting");
-        }
-        if (newMeeting is null)
-        {
-            return NotFound("Tried to reschedule to non existant meeting");
-        }
-        var userRegisteredOldParticipation = await dbContext.MeetingsParticipants.FirstOrDefaultAsync(x => x.MeetingId == oldMeeting.Id && x.ParticipantId == user!.Id);
-        if (userRegisteredOldParticipation is null)
-        {
-            return BadRequest("Tried to reschedule from a meeting that the user is not participating in");
-        }
-        var newMeetingOrganizators = await dbContext.MeetingsOrganizators.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.OrganizatorId!).ToListAsync();
-        if (newMeetingOrganizators.Contains(user!.Id))
-        {
-            return BadRequest("Tried to reschedule to owned meeting");
-        }
-        var currentParticipants = await dbContext.MeetingsParticipants.Where(x => x.MeetingId == newMeeting.Id).Select(pair => pair.ParticipantId!).ToListAsync();
-        if (currentParticipants.Contains(user.Id))
-        {
-            return BadRequest("Tried to reschedule to a meeting that user is already participating in");
-        }
-        if (currentParticipants.Count == newMeeting.MaxParticipants)
-        {
-            return BadRequest("Tried to reschedule to an already full meeting");
-        }
-        dbContext.MeetingsParticipants.Remove(userRegisteredOldParticipation);
-        dbContext.MeetingsParticipants.Add(new MeetingParticipant() { Meeting = newMeeting, MeetingId = newMeeting.Id, Participant = user, ParticipantId = user.Id });
-        try
-        {
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception)
-        {
-            return Problem("Due to server error couldn't save the participation in meeting, try to contact service administrator");
+            return Problem(errorOrSuccess.Errors);
         }
         return Ok();
     }
@@ -242,13 +180,12 @@ public class MeetingsController : Controller{
     [Route("client/{id:guid}")]
     public async Task<IActionResult> GetMeetingsByParticipant([FromRoute] Guid id)
     {
-        var organizatorMeetingsIds = await dbContext.MeetingsParticipants
-            .Where(x => x.ParticipantId == id.ToString())
-            .Select(x => x.MeetingId)
-            .ToListAsync();
-        var meetings = await dbContext.Meetings
-            .Where(m => organizatorMeetingsIds.Contains(m.Id))
-            .ToListAsync();
+        var errorOrMeetings = await _meetingsService.GetJoinedMeetingsByUserId(id.ToString());
+        if (errorOrMeetings.IsError)
+        {
+            return Problem(errorOrMeetings.Errors);
+        }
+        var meetings = errorOrMeetings.Value;
         return Ok(meetings);
     }
 
@@ -258,22 +195,22 @@ public class MeetingsController : Controller{
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail!);
-        var userMeetingsIds = await dbContext.MeetingsParticipants
-            .Where(x => x.ParticipantId== user!.Id)
-            .Select(x => x.MeetingId)
-            .ToListAsync();
-        var myMeetings = await dbContext.Meetings
-            .Where(meeting => userMeetingsIds.Contains(meeting.Id))
-            .ToListAsync();
+        var errorOrMeetings = await _meetingsService.GetJoinedMeetingsByEmail(userEmail!);
+        if (errorOrMeetings.IsError)
+        {
+            return Problem(errorOrMeetings.Errors);
+        }
+        var myMeetings = errorOrMeetings.Value;
         return Ok(myMeetings);
     }
+
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("upcoming")]
     public async Task<IActionResult> GetUpcomingMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var userRole = await userManager.GetRolesAsync(user);
 
         //if (userRole.Contains("Client")
@@ -311,7 +248,7 @@ public class MeetingsController : Controller{
     public async Task<IActionResult> GetArchivedMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await userManager.FindByEmailAsync(userEmail);
+        var user = await userManager.FindByEmailAsync(userEmail!);
         var userRole = await userManager.GetRolesAsync(user);
 
         //if (userRole.Contains("Client")

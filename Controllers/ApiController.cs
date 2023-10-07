@@ -1,4 +1,5 @@
 ﻿using ErrorOr;
+using LinkUpBackend.ServiceErrors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -22,11 +23,13 @@ namespace LinkUpBackend.Controllers
                 return Problem();
             }
             var firstError = errors[0];
-            var statusCode = firstError.Type switch
+            var statusCode = (int)firstError.Type switch
             {
-                ErrorType.NotFound => StatusCodes.Status404NotFound,
-                ErrorType.Validation => StatusCodes.Status400BadRequest,
-                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                (int)CustomErrorType.BadRequest => StatusCodes.Status400BadRequest,
+                (int)CustomErrorType.Authorization => StatusCodes.Status401Unauthorized,
+                (int)ErrorType.NotFound => StatusCodes.Status404NotFound,
+                (int)ErrorType.Validation => StatusCodes.Status400BadRequest,
+                (int)ErrorType.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError
             };
 
