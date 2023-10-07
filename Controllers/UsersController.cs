@@ -2,16 +2,13 @@
 using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
 using LinkUpBackend.ServiceErrors;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Linq;
@@ -37,6 +34,25 @@ public class UsersController : ApiController
        _configuration = configuration;
     }
 
+    /// <summary>
+    /// Signs up a new user
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     OPTIONS api/register
+    ///     {        
+    ///       "username": "John Doe",
+    ///       "email": "jdoe@gmail.com",
+    ///       "password": "P@ssw0rd",
+    ///       "role": "Contractor"
+    ///     }
+    /// </remarks>
+    /// <param name="userToRegister"></param>
+    /// <returns>A status code indicating the result of the operation.</returns>
+    /// <response code="202">Request is accepted and further processed</response>
+    /// <response code="400">Request parameters do not meet expected ones</response>
+    /// <response code="409">Email has been in use</response>
 
     [HttpOptions("register")]
     //[ResponseCache(CacheProfileName = "NoCache")]
@@ -55,7 +71,22 @@ public class UsersController : ApiController
         return Accepted($"User {user.UserName} has been registered.");
     }
 
-
+    /// <summary>
+    /// Signs user in
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     OPTIONS api/login
+    ///     {        
+    ///       "email": "jdoe@gmail.com",
+    ///       "password": "P@ssw0rd",
+    ///     }
+    /// </remarks>
+    /// <param name="userToLogin"></param>
+    /// <returns>A status code indicating the result of the operation or token in case of success</returns>
+    /// <response code="202">Request is accepted and further processed</response>
+    /// <response code="401">User has not been registered</response>
     [HttpOptions("login")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [AllowAnonymous]
@@ -75,15 +106,35 @@ public class UsersController : ApiController
         });
     }
 
+    /// <summary>
+    /// Handles access denied
+    /// </summary>
+    /// <remarks>
+    /// This method handles HTTP GET requests at the "/access-denied" path.
+    /// It is used to deny access to specific resources. 
+    /// If the client lacks the necessary permissions or is unauthenticated, 
+    /// it returns an HTTP status code of 403 Forbidden.
+    /// </remarks>
+    /// <returns>A status code indicating the result of the operation.</returns>
+
     [HttpGet("access-denied")]
     //[ResponseCache(CacheProfileName = "NoCache")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [AllowAnonymous]
     public IActionResult AccessDenied()
     {
         return Forbid();
     }
 
+    /// <summary>
+    /// Gets the list of all contractors
+    /// </summary>
+    /// <returns>All contractors' details</returns>
+    /// <response code="200">Returns a list of contractors</response>
+    /// <response code="401">User has not been authorized for this action</response>
     [HttpGet("contractors")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllContractors(){
         var userRole = HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
@@ -100,16 +151,23 @@ public class UsersController : ApiController
         return Ok(contractorsInfo.Where(contractor =>  contractor.Email != userEmail));
     }
 
+    /// <summary>
+    /// Gets user role
+    /// </summary>
+    /// <returns>User role</returns>
+    /// <response code="200">Returns user role</response>
+    /// <response code="401">User has not been authorized for this action</response>
+    /// <response code="404">No role has been assigned to the user</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-role")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetLoggedInUserRole(){
-        // Pobierz identyfikator użytkownika z kontekstu uwierzytelniania
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (!string.IsNullOrEmpty(userEmail))
         {
-            // Użytkownik zalogowany
-            // Zwróć identyfikator użytkownika
             var errorOrUserRole = await _usersService.GetUserRoleByEmail(userEmail);
             if (errorOrUserRole.IsError)
             {
@@ -120,17 +178,19 @@ public class UsersController : ApiController
         }
         else
         {
-            // Użytkownik nie jest zalogowany (brak identyfikatora użytkownika w kontekście uwierzytelniania)
-            // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
-            return Unauthorized("Użytkownik nie jest zalogowany.");
+           return Unauthorized("User is not logged.");
         }
     }
 
+    /// <summary>Gets user details</summary>
+    /// <returns>User details</returns>
+    /// <response code="200">Returns user details</response>
+    /// <response code="401">User has not been authorized for this action</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-details")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetActionResultAsync()
+    public async Task<IActionResult> GetUserDetails()
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -147,11 +207,29 @@ public class UsersController : ApiController
         return Unauthorized("User is not logged.");
     }
 
+    /// <summary>
+    /// Uploads user's profile picture to photo storage
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     POST api/user-photo
+    ///     {        
+    ///       [Attach a JPG/JPEG file, example URL for testing: https://picsum.photos/200/300]
+    ///     }
+    /// </remarks>
+    /// <param name="profilePicture">The user's profile picture to upload</param>
+    /// <returns>A status code indicating the result of the operation</returns>
+    /// <response code="200">Picture has been uploaded successfully</response>
+    /// <response code="400">Picture format does not meet expectations</response>
+    /// <response code="401">User has not been authorized for this action</response>
+    /// <response code="500">Server side error</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost("user-photo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -197,10 +275,18 @@ public class UsersController : ApiController
         }
     }
 
+    /// <summary>
+    /// Gets user's profile picture
+    /// </summary>
+    /// <returns>A file in .jpg extension</returns>
+    /// <response code="200">Returns profile picture</response>
+    /// <response code="404">User has not uploaded any picture yet</response>
+    /// <response code="500">Server side error</response>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("user-photo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProfilePicture()
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

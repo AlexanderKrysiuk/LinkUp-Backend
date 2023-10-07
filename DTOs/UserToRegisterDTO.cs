@@ -2,6 +2,9 @@
 
 namespace LinkUpBackend.DTOs;
 
+/// <summary>
+/// User data required for signing up
+/// </summary>
 public class UserToRegisterDTO
 {
     [Required]
