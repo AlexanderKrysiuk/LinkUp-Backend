@@ -17,83 +17,12 @@ namespace LinkUpBackend.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-
-            modelBuilder.Entity("LinkUpBackend.Models.ArchiveMeeting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Archive");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.Meeting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Duration")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxParticipants")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Meetings");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingOrganizator", b =>
-                {
-                    b.Property<string>("OrganizatorId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("OrganizatorId", "MeetingId");
-
-                    b.HasIndex("MeetingId");
-
-                    b.ToTable("MeetingsOrganizators");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.Property<string>("ParticipantId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ParticipantId", "MeetingId");
-
-                    b.HasIndex("MeetingId");
-
-                    b.ToTable("MeetingsParticipants");
-                });
-
-            modelBuilder.Entity("LinkUpBackend.Models.Role", b =>
+            modelBuilder.Entity("LinkUpBackend.Domain.Role", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -121,25 +50,25 @@ namespace LinkUpBackend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "0aecf550-53ad-4363-8729-056ea7a2a407",
+                            Id = "5b39b385-7a0a-44bd-a7b5-1c7e85a0a76c",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         },
                         new
                         {
-                            Id = "1285b52d-615e-471c-9418-f340cc7832e4",
+                            Id = "5521aae1-42ba-4627-989f-d3f97c39f9b1",
                             Name = "Contractor",
                             NormalizedName = "CONTRACTOR"
                         },
                         new
                         {
-                            Id = "095d7b3b-826c-40dd-b64d-4e5c0916dd76",
+                            Id = "de07ed46-4bc0-46eb-98d9-63b5250e0725",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
                 });
 
-            modelBuilder.Entity("LinkUpBackend.Models.User", b =>
+            modelBuilder.Entity("LinkUpBackend.Domain.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -201,6 +130,44 @@ namespace LinkUpBackend.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpBackend.Models.Meeting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxParticipants")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Meetings");
+                });
+
+            modelBuilder.Entity("LinkUpBackend.Models.MeetingOrganizator", b =>
+                {
+                    b.Property<string>("OrganizatorId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("OrganizatorId", "MeetingId");
+
+                    b.HasIndex("MeetingId");
+
+                    b.ToTable("MeetingsOrganizators");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -317,7 +284,7 @@ namespace LinkUpBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LinkUpBackend.Models.User", "Organizator")
+                    b.HasOne("LinkUpBackend.Domain.User", "Organizator")
                         .WithMany()
                         .HasForeignKey("OrganizatorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -328,28 +295,9 @@ namespace LinkUpBackend.Migrations
                     b.Navigation("Organizator");
                 });
 
-            modelBuilder.Entity("LinkUpBackend.Models.MeetingParticipant", b =>
-                {
-                    b.HasOne("LinkUpBackend.Models.Meeting", "Meeting")
-                        .WithMany()
-                        .HasForeignKey("MeetingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LinkUpBackend.Models.User", "Participant")
-                        .WithMany()
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Meeting");
-
-                    b.Navigation("Participant");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("LinkUpBackend.Models.Role", null)
+                    b.HasOne("LinkUpBackend.Domain.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -358,7 +306,7 @@ namespace LinkUpBackend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("LinkUpBackend.Models.User", null)
+                    b.HasOne("LinkUpBackend.Domain.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -367,7 +315,7 @@ namespace LinkUpBackend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("LinkUpBackend.Models.User", null)
+                    b.HasOne("LinkUpBackend.Domain.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -376,13 +324,13 @@ namespace LinkUpBackend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("LinkUpBackend.Models.Role", null)
+                    b.HasOne("LinkUpBackend.Domain.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LinkUpBackend.Models.User", null)
+                    b.HasOne("LinkUpBackend.Domain.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -391,7 +339,7 @@ namespace LinkUpBackend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("LinkUpBackend.Models.User", null)
+                    b.HasOne("LinkUpBackend.Domain.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

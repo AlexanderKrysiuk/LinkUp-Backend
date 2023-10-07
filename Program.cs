@@ -1,10 +1,11 @@
 ﻿using LinkUpBackend.Configurations;
-using LinkUpBackend.Infrastructure;
 using LinkUpBackend.Models;
+using LinkUpBackend.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -116,7 +117,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseExceptionHandler("/error");
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -1,7 +1,6 @@
 ﻿using LinkUpBackend.Configurations;
-using LinkUpBackend.DTOs;
 using LinkUpBackend.Models;
-using LinkUpBackend.ServiceErrors;
+using LinkUpBackend.DTOs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -11,20 +10,17 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Linq;
-
 
 namespace LinkUpBackend.Controllers;
 
 [ApiController]
 [Route("api")]
 [Authorize]
-public class UsersController : ApiController
+public class UsersController : ControllerBase
 {
-    
+
     private readonly UserManager<User> _userManager;
 
     private readonly JwtConfiguration _jwtConfiguration;
@@ -52,49 +48,22 @@ public class UsersController : ApiController
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RegisterAsync([FromBody] UserToRegisterDTO userToRegister)
     {
-        var errorOrUser = Models.User.Create(userToRegister);
-        if (errorOrUser.IsError)
-        {
-            return Problem(errorOrUser.Errors);
-        }
-        var user = errorOrUser.Value;
-        bool hasUserBeenCreated = false;
-        List<ErrorOr.Error> errors = new();
-        try
-        {
-            var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
+        var user = new User();
+        user.UserName = userToRegister.Username;
+        user.Email = userToRegister.Email;
+               
+        var userRegistrationResult = await _userManager.CreateAsync(user, userToRegister.Password);
 
-            if (!userRegistrationResult.Succeeded)
-            {
-                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userRegistrationResult.Errors));
-                return Problem(errors);
-            }
-            hasUserBeenCreated = true;
-            var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
-
-            if (!userToRoleResult.Succeeded)
-            {
-                var userDeletionResult = await _userManager.DeleteAsync(user);
-                if (!userDeletionResult.Succeeded)
-                {
-                    // TODO: Log cleaning user error here
-                }
-                errors.AddRange(Errors.MapIdentityErrorsToErrorOrErrors(userToRoleResult.Errors));
-                return Problem(errors);
-            }
-        }
-        catch (Exception e)
+        if(!userRegistrationResult.Succeeded)
         {
-            if (hasUserBeenCreated)
-            {
-                var userDeletionResult = await _userManager.DeleteAsync(user);
-                if (!userDeletionResult.Succeeded)
-                {
-                    // TODO: Log cleaning user error here
-                }
-            }
-            errors.Add(ErrorOr.Error.Failure(description:e.Message));
-            return Problem(errors);
+            throw new Exception(); //TODO: error handling
+        }
+
+        var userToRoleResult = await _userManager.AddToRoleAsync(user, userToRegister.Role);
+
+        if(!userToRoleResult.Succeeded)
+        {
+            throw new Exception(); //TODO: error handling
         }
 
         return Accepted($"User {user.UserName} has been registered.");
@@ -146,6 +115,7 @@ public class UsersController : ApiController
         return Unauthorized();
     }
 
+    //TODO: fix logout
     [HttpOptions("logout")]
     //[ResponseCache(CacheProfileName = "NoCache")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -162,18 +132,6 @@ public class UsersController : ApiController
     public IActionResult AccessDenied()
     {
         return Forbid();
-    }
-
-    [HttpGet("contractors")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAllContractors(){
-
-        var contractors = await _userManager.GetUsersInRoleAsync("Contractor");
-        var contractorsInfo = contractors.Select(user => new{
-            UserName = user.UserName,
-            Email = user.Email
-            });
-        return Ok(contractorsInfo);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -203,102 +161,6 @@ public class UsersController : ApiController
         // Możesz zwrócić odpowiednią odpowiedź, np. Unauthorized
         return Unauthorized("Użytkownik nie jest zalogowany.");
         }
-    }
-
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("user-details")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetActionResultAsync()
-    {
-        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!string.IsNullOrEmpty(userEmail))
-        {
-            var user = await _userManager.FindByEmailAsync(userEmail);
-            UserDetailsDTO userDetails = new UserDetailsDTO { Username = user.UserName, Email = user.Email };
-            return Ok(userDetails);
-        }
-        return Unauthorized("User is not logged.");
-    }
-
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpPost("user-photo")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
-    {
-        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await _userManager.FindByEmailAsync(userEmail);
-
-        string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
-        var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
-        var filePath = Path.Combine(storagePath, fileName);
-
-        if (System.IO.File.Exists(filePath))
-        {
-            System.IO.File.Delete(filePath);
-        }
-
-        try
-        {
-            if (profilePicture != null && profilePicture.Length > 0)
-            {
-                if (profilePicture.ContentType != "image/jpeg")
-                {
-                    return BadRequest("Invalid profile picture format. Only JPG/JPEG files are allowed.");
-                }
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await profilePicture.CopyToAsync(stream);
-                }
-                return Ok();
-            }
-            else
-            {
-                return BadRequest("Invalid profile picture."); //TODO
-            }
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An error occurred while processing the picture."); //TODO
-        }
-    }
-
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("user-photo")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetProfilePicture()
-    {
-        var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await _userManager.FindByEmailAsync(userEmail);
-
-        string storagePath = _configuration["AppSettings:LocalStoragePath"]!;
-        var fileName = user.Id + ".jpg"; //or Guid.NewGuid().ToString() + ".jpg";
-        var filePath = Path.Combine(storagePath, fileName);
-
-        try
-        {
-            if (System.IO.File.Exists(filePath))
-            {
-                var mimeType = "image/jpeg";
-                var file = new PhysicalFileResult(filePath, mimeType);
-                file.FileDownloadName = user.UserName!.ToString().Replace(" ", "") + ".jpg";
-
-                return file;
-            }
-            else
-            {
-                return NotFound("File not found.");
-            }
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "An error occurred while processing the picture.");
-        }
-    }
+    }   
 }
 
