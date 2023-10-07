@@ -116,7 +116,7 @@ public class MeetingsController : ApiController{
         {
             return Problem(errorOrMeetingDtos.Errors);
         }
-        var meetingDtos = errorOrMeetingDtos.Value;
+        var meetingDtos = errorOrMeetingDtos.Value.Where(meeting => meeting.DateTime > DateTime.Now).ToList();
         return Ok(meetingDtos);
     }
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
