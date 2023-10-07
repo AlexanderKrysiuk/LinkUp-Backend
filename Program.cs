@@ -35,7 +35,7 @@ builder.Services.AddIdentity<User, Role>(options =>
                     {
                         options.User.RequireUniqueEmail = true;
                         options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-
+                        
                         options.Password.RequireDigit = true;
                         options.Password.RequireNonAlphanumeric = true;
                         options.Password.RequireLowercase = true;
