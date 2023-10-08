@@ -213,33 +213,24 @@ public class MeetingsController : ApiController{
         var user = await userManager.FindByEmailAsync(userEmail!);
         var userRole = await userManager.GetRolesAsync(user);
 
-        //if (userRole.Contains("Client")
-        //{
-        //    var upcomingMeetingsIds = await dbContext.MeetingsParticipants
-        //        .Where(m => m.ParticipantId == user.Id.ToString())
-        //        .Select(m => m.MeetingId)
-        //        .ToListAsync();
-
-        //    var upcomingMeetings = await dbContext.Meetings
-        //        .Where(m => upcomingMeetingsIds.Contains(m.Id))
-        //        .OrderBy(m => m.DateTime)
-        //        .ToListAsync();
-        //}
-        //else
-        //{
-
-        var myMeetingsIds = await dbContext.MeetingsOrganizators
+        var myOrganizedMeetingsIds = await dbContext.MeetingsOrganizators
             .Where(mo => mo.OrganizatorId == user.Id.ToString())
             .Select(mo => mo.MeetingId)
             .ToListAsync();
-        var myMeetings = await dbContext.Meetings
-            .Where(m => myMeetingsIds.Contains(m.Id))
+
+        var myParticipantMeetingsIds = await dbContext.MeetingsParticipants
+            .Where(mp => mp.ParticipantId == user.Id.ToString())
+            .Select(mp => mp.MeetingId)
+            .ToListAsync();
+
+        var upcomingMeetings = await dbContext.Meetings
+            .Where(m => myOrganizedMeetingsIds.Contains(m.Id) || myParticipantMeetingsIds.Contains(m.Id))
             .OrderBy(m => m.DateTime)
             .ToListAsync();
-        //}
-        var upcomingMeetings = IsMeetingArchived(myMeetings, false);
 
-        return Ok(upcomingMeetings);
+        upcomingMeetings = IsMeetingArchived(upcomingMeetings, false);
+
+    return Ok(upcomingMeetings);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
