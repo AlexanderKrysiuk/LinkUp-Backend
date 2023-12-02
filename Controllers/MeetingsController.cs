@@ -207,7 +207,7 @@ public class MeetingsController : ApiController{
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("upcoming")]
-    public async Task<IActionResult> GetUpcomingMeetings() //so far only for admin/contractor
+    public async Task<IActionResult> GetMyUpcomingMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail!);
@@ -234,7 +234,7 @@ public class MeetingsController : ApiController{
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet]
     [Route("archived")]
-    public async Task<IActionResult> GetArchivedMeetings() //so far only for admin/contractor
+    public async Task<IActionResult> GetMyArchivedMeetings() //so far only for admin/contractor
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var user = await userManager.FindByEmailAsync(userEmail!);
