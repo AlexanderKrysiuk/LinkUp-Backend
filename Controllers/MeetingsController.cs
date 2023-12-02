@@ -223,14 +223,12 @@ public class MeetingsController : ApiController{
             .Select(mp => mp.MeetingId)
             .ToListAsync();
 
-        var upcomingMeetings = await dbContext.Meetings
+        var allMeetings = await dbContext.Meetings
             .Where(m => myOrganizedMeetingsIds.Contains(m.Id) || myParticipantMeetingsIds.Contains(m.Id))
             .OrderBy(m => m.DateTime)
             .ToListAsync();
 
-        upcomingMeetings = IsMeetingArchived(upcomingMeetings, false);
-
-    return Ok(upcomingMeetings);
+    return Ok(allMeetings.GetUpcoming());
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -266,26 +264,8 @@ public class MeetingsController : ApiController{
             .OrderBy(m => m.DateTime)
             .ToListAsync();
         //}
-        var archivedMeetings = IsMeetingArchived(myMeetings);
+        var archivedMeetings = myMeetings.GetArchived();
 
         return Ok(archivedMeetings);
-    }
-
-
-    private List<Meeting> IsMeetingArchived(List<Meeting> meetingList, bool archive = true)
-    {
-        List<Meeting> filteredMeetings = new List<Meeting>();
-
-        foreach (var meeting in meetingList)
-        {
-            bool isArchived = archive && meeting.DateTime.AddMinutes(meeting.Duration) < DateTime.Now.ToUniversalTime();
-            bool isUpcoming = !archive && meeting.DateTime.AddMinutes(meeting.Duration) >= DateTime.Now.ToUniversalTime();
-
-            if (isArchived || isUpcoming)
-            {
-                filteredMeetings.Add(meeting);
-            }
-        }
-        return filteredMeetings;
     }
 }
