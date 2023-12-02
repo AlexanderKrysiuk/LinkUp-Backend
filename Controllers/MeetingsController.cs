@@ -151,7 +151,7 @@ public class MeetingsController : ApiController{
     }
 
     [Authorize]
-    [HttpPost("{id:guid}/leave")]
+    [HttpDelete("{id:guid}/leave")]
     public async Task<IActionResult> LeaveMeeting([FromRoute] Guid id)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -164,7 +164,7 @@ public class MeetingsController : ApiController{
     }
 
     [Authorize]
-    [HttpPost("reschedule")]
+    [HttpPut("reschedule")]
     public async Task<IActionResult> RescheduleMeeting([FromBody] RescheduleMeetingDTO rescheduleInfo)
     {
         var userEmail = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
